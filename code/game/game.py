@@ -12,7 +12,7 @@ class Game:
     Contains every object of program
     After initialization the 'run' function runs until the program is shut down
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Create Game object and run game
         """
@@ -31,7 +31,7 @@ class Game:
         self.draw_count = 0  # Testing
         self.run()
         
-    def run(self):
+    def run(self) -> None:
         """
         Run the game until the program is shut down
         """
