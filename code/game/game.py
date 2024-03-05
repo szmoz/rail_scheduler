@@ -23,6 +23,7 @@ class Game:
         self.screen_width = S.SCREEN_WIDTH
         self.screen_height = S.SCREEN_HEIGHT
         self.screen_size = (self.screen_width, self.screen_height)
+        self.min_screen_size = self.screen_size
         # Initialize pygame
         pygame.init()
         self.screen = pg.display.set_mode(
@@ -31,8 +32,6 @@ class Game:
         )
         self.clock = pg.time.Clock()
         
-        # Static surface content
-        self.static_surf_content = pg.sprite.Group()
         # Frame
         self.frame = Frame(
             rect=pg.Rect(
@@ -45,7 +44,6 @@ class Game:
             top_color=C.FRAME_TOP,
             bottom_color=C.FRAME_BOTTOM,
         )
-        self.static_surf_content.add(self.frame)
         
         # Dynamic variables
         self.frame_length = v.FRAME_LENGTH
@@ -71,11 +69,21 @@ class Game:
                 elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                     self.running = False
                     break
+                elif event.type == pg.VIDEORESIZE:
+                    self.screen_width = max(event.w, self.min_screen_size[0])
+                    self.screen_height = max(event.h, self.min_screen_size[1])
+                    self.screen_size = (self.screen_width, self.screen_height)
+                    if self.screen_size != event.size:
+                        self.screen = pg.display.set_mode(self.screen_size, flags=pg.RESIZABLE)
+                    self.redraw = True
+                    self.frame.change_size(self.screen_size)
+                    break
             # Update screen
             if self.redraw:
                 self.redraw = False
                 self.draw_count += 1  # Testing
-                self.static_surf_content.draw(self.screen)
+                self.screen.fill("black")
+                self.frame.draw()
                 pg.display.flip()
             # Wait for next frame
             self.clock.tick(self.frame_length)
