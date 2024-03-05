@@ -1,6 +1,9 @@
 import pygame as pg
 
 
+from code.util.colors import Colors as C
+
+
 class Frame(pg.sprite.Group):
     """
     Frame object
@@ -81,31 +84,71 @@ class Frame(pg.sprite.Group):
         bottom.image.fill(self.bottom_color)
         bottom.rect = bottom.image.get_rect()
         bottom.rect.bottomright = self.rect.bottomright
+        
+        # Corners
+        if not self.pressed:
+            # Bottomleft corner
+            pg.draw.polygon(
+                surface=left.image,
+                color=self.bottom_color,
+                points=(
+                    left.rect.bottomleft,
+                    left.rect.bottomright,
+                    (left.rect.right, left.rect.bottom - self.thickness)
+                )
+            )
+            # Topright corner
+            pg.draw.polygon(
+                surface=top.image,
+                color=self.bottom_color,
+                points=(
+                    top.rect.topright,
+                    top.rect.bottomright,
+                    (top.rect.right - self.thickness, top.rect.bottom)
+                )
+            )
+
         # Edge lines
         if self.edge_lines is None:
-            edge_lines = []
-    
-        # Corners
-        if self.pressed:
+            self.edge_lines = []
+        if len(self.edge_lines) == 0:
             return
-        # Bottomleft corner
-        pg.draw.polygon(
-            surface=left.image,
-            color=self.bottom_color,
-            points=(
-                left.rect.bottomleft,
-                left.rect.bottomright,
-                (left.rect.right, left.rect.bottom - self.thickness)
-            )
+        edge_surf_data = (
+            None,  # idx:0
+            (left.rect.topleft, (1, left.rect.height)),  # idx:1
+            (top.rect.topleft, (top.rect.width, 1)),  # idx:2
+            ((top.rect.right - 1, top.rect.top), (1, left.rect.height)),  # idx:3
+            ((left.rect.left, left.rect.bottom - 1), (top.rect.width, 1)),  # idx:4
+            None,  # idx:5
+            ((left.rect.right, bottom.rect.top), (top.rect.width - (self.thickness * 2), 1)),  # idx:-4
+            ((right.rect.left, right.rect.top), (1, left.rect.height - (self.thickness * 2))),  # idx:-3
+            ((left.rect.right, top.rect.bottom - 1), (top.rect.width - (self.thickness * 2), 1)),  # idx:-2
+            ((left.rect.right - 1, top.rect.bottom), (1, left.rect.height - (self.thickness * 2))),  # idx:-1
         )
-        # Topright corner
-        pg.draw.polygon(
-            surface=top.image,
-            color=self.bottom_color,
-            points=(
-                top.rect.topright,
-                top.rect.bottomright,
-                (top.rect.right - self.thickness, top.rect.bottom)
-            )
-        )
+        for line_idx in self.edge_lines:
+            if line_idx % 2 == 0:  # top & bottom: horizontal lines
+                end_x = edge_surf_data[line_idx][1][0]
+                line = pg.sprite.Sprite(self)
+                line.image = pg.Surface(edge_surf_data[line_idx][1])
+                line.image.set_colorkey(C.BLACK)
+                for act_x in range(0, end_x + 1, 2):
+                    pg.draw.line(line.image,
+                                 C.DARK_GRAY,
+                                 (act_x, 0),
+                                 (act_x, 0))
+                line.rect = line.image.get_rect()
+                line.rect.topleft = edge_surf_data[line_idx][0]
+                continue
+            # right & left: vertical lines
+            end_y = edge_surf_data[line_idx][1][1]
+            line = pg.sprite.Sprite(self)
+            line.image = pg.Surface(edge_surf_data[line_idx][1])
+            line.image.set_colorkey(C.BLACK)
+            for act_y in range(0, end_y + 1, 2):
+                pg.draw.line(line.image,
+                             C.DARK_GRAY,
+                             (0, act_y),
+                             (0, act_y))
+            line.rect = line.image.get_rect()
+            line.rect.topleft = edge_surf_data[line_idx][0]
         

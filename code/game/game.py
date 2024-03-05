@@ -78,12 +78,15 @@ class Game:
                     self.redraw = True
                     self.frame.change_size(self.screen_size)
                     break
-            # Update screen
+            # Redraw the full screen
             if self.redraw:
                 self.redraw = False
                 self.draw_count += 1  # Testing
+                # Clear screen
                 self.screen.fill("black")
-                self.frame.draw()
+                # Content
+                self.frame.draw(self.screen)
+                # Update screen
                 pg.display.flip()
             # Wait for next frame
             self.clock.tick(self.frame_length)
