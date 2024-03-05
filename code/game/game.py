@@ -25,6 +25,7 @@ class Game:
         self.clock = pg.time.Clock()
         
         # Dynamic variables
+        self.frame_length = v.FRAME_LENGTH
         self.running = True
         self.redraw = True
         self.draw_count = 0  # Testing
@@ -53,7 +54,7 @@ class Game:
                 self.draw_count += 1  # Testing
                 pg.display.flip()
             # Wait for next frame
-            self.clock.tick(v.FRAMERATE)
+            self.clock.tick(self.frame_length)
 
         print(f"Number of draws: {self.draw_count}")  # Testing
         pg.quit()
