@@ -134,21 +134,26 @@ class Button:
         self.actual = 0
                 
     def draw(self,
-             surf: pg.Surface):
+             surf: pg.Surface,
+             ) -> pg.Rect:
         """
         Draw button onto surface
         :param surf: Surface
+        :return rect area to draw
         """
         surf.blit(self.surfs[self.actual], self.rect)
+        return self.rect
         
     def update(self,
                surf_idx: int,
-               surf: pg.Surface):
+               surf: pg.Surface,
+               ) -> pg.Rect:
         """
         Change button surface and redraw
         :param surf_idx: 0:standard; 1:pressed; 2:over
         :param surf: surface
+        :return rect area to draw
         """
         self.actual = surf_idx
-        self.draw(surf)
+        return self.draw(surf)
     

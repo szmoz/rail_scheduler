@@ -19,11 +19,14 @@ class CameraView:
         
     def draw(self,
              surf: pg.Surface,
-             map_surf=None):
+             map_surf: pg.Surface = None,
+             ) -> pg.Rect:
         """
         Draw view image on surface
         :param surf: surface
         :param map_surf: Map object's surface
+        :return rect area to draw
         """
         surf.blit(map_surf, self.rect, area=self.map_rect)
+        return self.rect
         

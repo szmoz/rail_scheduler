@@ -50,16 +50,19 @@ class Camera(pg.sprite.Sprite):
         # Dynamic variables
         self.active_camera_view_idx = 0
         
-    def on_redraw(self,
-                  surf: pg.Surface):
+    def redraw(self,
+               surf: pg.Surface,
+               ) -> pg.Rect:
         """
         Redraw all surface content
         :param surf: surface
+        :return rect area to draw
         """
         # Frame
         self.frame.draw(surf)
         # Camera screen
         self.camera_views[self.active_camera_view_idx].draw(surf, self.map_surfs[self.active_camera_view_idx])
+        return self.rect
         
     def change_size(self,
                     new_size: tuple or list):
@@ -76,7 +79,6 @@ class Camera(pg.sprite.Sprite):
         self.image = pg.Surface(self.rect.size)
         # Frame
         self.frame.change_size(new_size)
-        print(self.frame.sprites())
         # Empty camera view
         self.empty_camera_view.change_size(
             (new_size[0] - (S.FRAME_THICKNESS * 2),

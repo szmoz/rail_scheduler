@@ -90,6 +90,9 @@ class MenuBar:
                 frame_edge_lines_over=button_frame_edge_lines_over[i]
             )
             prev_left += button_width
+            
+        # Event managers
+        
         
         # Dynamic variables
         self.buttons_to_draw = []
@@ -103,25 +106,34 @@ class MenuBar:
         self.buttons_to_draw.append(button_idx)
         
     def on_draw(self,
-                surf: pg.Surface):
+                surf: pg.Surface,
+                ) -> list:
         """
         Draw only buttons that need redraw
         :param surf: surface
+        :return list of rect areas to draw
         """
+        draw_rects = []
         for button_idx in self.buttons_to_draw:
             self.buttons[button_idx].draw(surf)
+            draw_rects.append(self.buttons[button_idx].rect)
+        self.buttons_to_draw.clear()
+        return draw_rects
         
     def on_redraw(self,
-                  surf: pg.Surface):
+                  surf: pg.Surface,
+                  ) -> pg.Rect:
         """
         Draw menubar content on surface
         :param surf: surface
+        :return rect area to draw
         """
         # Background
         self.background.draw(surf)
         # Buttons
         for button in self.buttons.values():
             button.draw(surf)
+        return self.rect
             
     def change_size(self,
                     new_size: tuple or list):

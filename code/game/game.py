@@ -85,6 +85,7 @@ class Game:
         self.running = True
         self.redraw = True
         self.draw_count = 0  # Testing
+        self.draw_rects = []
         self.run()
         
     def run(self) -> None:
@@ -104,10 +105,18 @@ class Game:
             if self.redraw:
                 self.redraw = False
                 self.draw_count += 1  # Testing
-                self.on_redraw()
+                # Clear screen
+                self.screen.fill("black")
+                # Content
+                self.frame.draw(self.screen)
+                self.frame_camera_gap.draw(self.screen)
+                self.camera.redraw(self.screen)
+                # Update rect
+                self.draw_rects.append(self.screen.get_rect())
                 
             # Update screen
-            pg.display.flip()
+            pg.display.update(self.draw_rects)
+            self.draw_rects.clear()
             # Wait for next frame
             self.clock.tick(self.frame_length)
         
@@ -116,14 +125,6 @@ class Game:
         pg.quit()
         sys.exit()
         
-    def on_redraw(self):
-        # Clear screen
-        self.screen.fill("black")
-        # Content
-        self.frame.draw(self.screen)
-        self.frame_camera_gap.draw(self.screen)
-        self.camera.on_redraw(self.screen)
-
     def on_quit(self, *args, **kwargs):
         self.running = False
         return True

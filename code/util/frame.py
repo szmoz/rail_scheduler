@@ -138,7 +138,7 @@ class Frame(pg.sprite.Group):
                              (0, act_y))
             line.rect = line.image.get_rect()
             line.rect.topleft = edge_surf_data[line_idx][0]
-        
+            
         
 class FrameResizable(Frame):
     def __init__(self,
