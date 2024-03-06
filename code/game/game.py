@@ -6,6 +6,7 @@ from code.game.colors import Colors as C
 from code.game.sizes import Sizes as S
 import code.game.variables as v
 
+from code.util.event_manager import EventManager
 from code.util.frame import Frame
 
 
@@ -44,6 +45,11 @@ class Game:
             top_color=C.FRAME_TOP,
             bottom_color=C.FRAME_BOTTOM,
         )
+        # Tools
+        self.event_manager = EventManager(
+            event_types=(pg.QUIT, pg.KEYDOWN, pg.VIDEORESIZE),
+            event_functions=(self.on_quit, self.on_keydown, self.on_videoresize)
+        )
         
         # Dynamic variables
         self.frame_length = v.FRAME_LENGTH
@@ -60,24 +66,11 @@ class Game:
         print(pg.NUMEVENTS - 1)
         # Main game loop
         while self.running:
-            # ---------TEST----------
             # Event loop
             for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    self.running = False
-                    break
-                elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
-                    self.running = False
-                    break
-                elif event.type == pg.VIDEORESIZE:
-                    self.screen_width = max(event.w, self.min_screen_size[0])
-                    self.screen_height = max(event.h, self.min_screen_size[1])
-                    self.screen_size = (self.screen_width, self.screen_height)
-                    if self.screen_size != event.size:
-                        self.screen = pg.display.set_mode(self.screen_size, flags=pg.RESIZABLE)
-                    self.redraw = True
-                    self.frame.change_size(self.screen_size)
-                    break
+                if self.event_manager.handle(event):
+                    continue
+                
             # Redraw the full screen
             if self.redraw:
                 self.redraw = False
@@ -86,13 +79,36 @@ class Game:
                 self.screen.fill("black")
                 # Content
                 self.frame.draw(self.screen)
-                # Update screen
-                pg.display.flip()
+                
+            # Update screen
+            pg.display.flip()
             # Wait for next frame
             self.clock.tick(self.frame_length)
-
+        
+        # Shutting down program
         print(f"Number of draws: {self.draw_count}")  # Testing
         pg.quit()
         sys.exit()
-        
-        
+
+    def on_quit(self, *args, **kwargs):
+        self.running = False
+        return True
+    
+    def on_keydown(self, event, *args, **kwargs):
+        if event.key != pg.K_ESCAPE:
+            return False
+        return self.on_quit()
+    
+    def on_videoresize(self, event, *args, **kwargs):
+        # Set new screen size
+        self.screen_width = max(event.w, self.min_screen_size[0])
+        self.screen_height = max(event.h, self.min_screen_size[1])
+        self.screen_size = (self.screen_width, self.screen_height)
+        # Size smaller than minimum
+        if self.screen_size != event.size:
+            self.screen = pg.display.set_mode(self.screen_size, flags=pg.RESIZABLE)
+        # Change resizeable objects
+        self.redraw = True
+        self.frame.change_size(self.screen_size)
+        return True
+    
