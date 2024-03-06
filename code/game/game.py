@@ -7,7 +7,7 @@ from code.game.sizes import Sizes as S
 import code.game.variables as v
 
 from code.util.event_manager import EventManager
-from code.util.frame import Frame
+from code.util.frame import FrameResizable
 
 
 class Game:
@@ -34,7 +34,7 @@ class Game:
         self.clock = pg.time.Clock()
         
         # Frame
-        self.frame = Frame(
+        self.frame = FrameResizable(
             rect=pg.Rect(
                 0,
                 0,
