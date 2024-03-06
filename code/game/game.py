@@ -6,6 +6,7 @@ from code.game.colors import Colors as C
 from code.game.sizes import Sizes as S
 import code.game.variables as v
 
+from code.util.background import Background
 from code.util.event_manager import EventManager
 from code.util.frame import FrameResizable
 
@@ -33,6 +34,7 @@ class Game:
         )
         self.clock = pg.time.Clock()
         
+        # Surface content
         # Frame
         self.frame = FrameResizable(
             rect=pg.Rect(
@@ -45,7 +47,21 @@ class Game:
             top_color=C.FRAME_TOP,
             bottom_color=C.FRAME_BOTTOM,
         )
-        # Tools
+        # Frame-camera gap
+        self.frame_camera_gap = FrameResizable(
+            rect=pg.Rect(
+                S.FRAME_THICKNESS,
+                S.FRAME_THICKNESS + S.MENUBAR_HEIGHT + S.TOOLBAR_HEIGHT,
+                self.screen_width - (S.FRAME_THICKNESS * 2),
+                self.screen_height - (S.FRAME_THICKNESS * 2) - S.TOOLBAR_HEIGHT - S.MENUBAR_HEIGHT
+            ),
+            thickness=S.FRAME_CAMERA_GAP,
+            top_color=C.FRAME_CAMERA_GAP,
+            bottom_color=C.FRAME_CAMERA_GAP,
+            pressed=True,
+        )
+        
+        # Event managers
         self.event_manager = EventManager(
             event_types=(pg.QUIT, pg.KEYDOWN, pg.VIDEORESIZE),
             event_functions=(self.on_quit, self.on_keydown, self.on_videoresize)
@@ -75,10 +91,7 @@ class Game:
             if self.redraw:
                 self.redraw = False
                 self.draw_count += 1  # Testing
-                # Clear screen
-                self.screen.fill("black")
-                # Content
-                self.frame.draw(self.screen)
+                self.on_redraw()
                 
             # Update screen
             pg.display.flip()
@@ -89,6 +102,13 @@ class Game:
         print(f"Number of draws: {self.draw_count}")  # Testing
         pg.quit()
         sys.exit()
+        
+    def on_redraw(self):
+        # Clear screen
+        self.screen.fill("black")
+        # Content
+        self.frame.draw(self.screen)
+        self.frame_camera_gap.draw(self.screen)
 
     def on_quit(self, *args, **kwargs):
         self.running = False
@@ -101,6 +121,7 @@ class Game:
     
     def on_videoresize(self, event, *args, **kwargs):
         # Set new screen size
+        old_screen_size = self.screen_size
         self.screen_width = max(event.w, self.min_screen_size[0])
         self.screen_height = max(event.h, self.min_screen_size[1])
         self.screen_size = (self.screen_width, self.screen_height)
@@ -109,6 +130,17 @@ class Game:
             self.screen = pg.display.set_mode(self.screen_size, flags=pg.RESIZABLE)
         # Change resizeable objects
         self.redraw = True
-        self.frame.change_size(self.screen_size)
+        if old_screen_size != self.screen_size:
+            self.change_content_size()
         return True
     
+    def change_content_size(self):
+        """
+        Resize all resizable content
+        """
+        self.frame.change_size(self.screen_size)
+        self.frame_camera_gap.change_size(
+            (self.screen_width - (S.FRAME_THICKNESS * 2),
+             self.screen_height - (S.FRAME_THICKNESS * 2) - S.MENUBAR_HEIGHT - S.TOOLBAR_HEIGHT)
+        )
+        

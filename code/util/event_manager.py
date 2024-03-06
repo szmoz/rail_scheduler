@@ -20,7 +20,6 @@ class EventManager:
         self.event_handlers = dict()
         for i in range(len(event_types)):
             self.event_handlers[event_types[i]] = event_functions[i]
-        print(self.event_handlers)
 
     def handle(self,
                event: pg.event.Event = None,

@@ -181,7 +181,7 @@ class FrameResizable(Frame):
         Update frame size and recreate sprites
         :param new_size: new size of rectangle that needs to be framed (inclusively)
         """
-        # Update data
+        # Update rect
         self.rect = pg.Rect(
             self.rect.topleft,
             new_size
