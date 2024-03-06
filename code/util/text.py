@@ -41,8 +41,8 @@ class Text(pg.sprite.Sprite):
             'bottomleft': self.anchor_bottomleft,
             'bottomright': self.anchor_bottomright
         }
-        self.my_anchor_function = anchor_functions[anchor_type]
-        self.my_anchor_function()
+        self.anchoring = anchor_functions[anchor_type]
+        self.anchoring()
     
     
     def draw(self,
@@ -56,14 +56,13 @@ class Text(pg.sprite.Sprite):
     def change_text(self,
                     new_text: str):
         """
-        Change text and recenter
+        Change text and position according to anchoring point
         """
         self.text = new_text
         self.image = self.font.render(self.text, True, self.color)
         # Rect
-        old_center = self.rect.center
         self.rect = self.image.get_rect()
-        self.rect.center = old_center
+        self.anchoring()
 
     def anchor_center(self):
         self.rect.center = self.anchor_pos
