@@ -1,7 +1,10 @@
+import selectors
+
 import pygame as pg
 
 from code.util.background import BackgroundResizable
 from code.util.button import Button
+from code.util.event_manager import EventManager
 
 
 class MenuBar:
@@ -92,37 +95,294 @@ class MenuBar:
             prev_left += button_width
             
         # Event managers
-        
+        self.event_managers = dict()
+        self.event_managers[ObjectStates.STANDARD] = EventManager(
+            event_types=(pg.MOUSEMOTION, pg.MOUSEBUTTONDOWN),
+            event_functions=(self.isover, self.ispressed_start)
+        )
+        self.event_managers[ObjectStates.LEFT_MOUSE_PRESSED] = EventManager(
+            event_types=(pg.MOUSEMOTION, pg.MOUSEBUTTONUP),
+            event_functions=(self.ispressed, self.isclicked)
+        )
+        self.event_managers[ObjectStates.MENU_OPENED] = EventManager(
+            event_types=(pg.MOUSEMOTION),
+            event_functions=(self.isover_menu_opened)
+        )
         
         # Dynamic variables
-        self.buttons_to_draw = []
+        self.state = ObjectStates.STANDARD
+        self.button_over = -1
+        self.button_pressed = -1
         
-    def button_to_draw(self,
-                       button_idx: int):
+    def button_action(self,
+                      idx: int):
+        print(f"button action: {idx}")
+    
+    def isclicked(self,
+                  event: pg.event.Event,
+                  game,
+                  ) -> bool:
         """
-        Prepare a button for redraw
-        :param button_idx: index of button that needs redraw
+        Check if button is clicked when mousebutton up
+        :param event: pygame event
+        :param game: Game object
+        :return: bool True:go to next event; False:go to next event manager
         """
-        self.buttons_to_draw.append(button_idx)
+        # Check for left mousebutton
+        if event.button != 1:
+            return False
+        # Get colliding button index
+        idx = self.get_button_collision(event.pos)
+        # No collision
+        if idx < 0:
+            self.state = ObjectStates.STANDARD
+            # Button not pressed
+            if self.button_pressed < 0:
+                return True
+            # Button pressed
+            self.update_button(
+                game=game,
+                button_idx=self.button_pressed,
+                new_state=ButtonStates.STANDARD
+            )
+            self.button_pressed = -1
+            return True
+        # Collision
+        self.state = ObjectStates.MENU_OPENED
+        # Different button
+        if self.button_pressed != idx:
+            if self.button_pressed >= 0:
+                self.update_button(
+                    game=game,
+                    button_idx=self.button_pressed,
+                    new_state=ButtonStates.STANDARD
+                )
+            self.button_pressed = idx
+            self.update_button(
+                game=game,
+                button_idx=self.button_pressed,
+                new_state=ButtonStates.PRESSED
+            )
+        # Same button
+        self.button_action(idx)
+        return True
         
-    def on_draw(self,
-                surf: pg.Surface,
-                ) -> list:
+    def ispressed(self,
+                  event: pg.event.Event,
+                  game,
+                  ) -> bool:
         """
-        Draw only buttons that need redraw
-        :param surf: surface
-        :return list of rect areas to draw
+        Check if button is pressed when mousemotion
+        :param event: pygame event
+        :param game: Game object
+        :return: bool True:go to next event; False:go to next event manager
         """
-        draw_rects = []
-        for button_idx in self.buttons_to_draw:
-            self.buttons[button_idx].draw(surf)
-            draw_rects.append(self.buttons[button_idx].rect)
-        self.buttons_to_draw.clear()
-        return draw_rects
+        # Get colliding button index
+        idx = self.get_button_collision(event.pos)
+        # No collision
+        if idx < 0:
+            # Button not pressed
+            if self.button_pressed < 0:
+                return False
+            # Button pressed
+            self.update_button(
+                game=game,
+                button_idx=self.button_pressed,
+                new_state=ButtonStates.STANDARD
+            )
+            self.button_pressed = -1
+            return False
+        # Collision
+        # Same button
+        if self.button_pressed == idx:
+            return True
+        # Different button
+        if self.button_pressed >= 0:
+            self.update_button(
+                game=game,
+                button_idx=self.button_pressed,
+                new_state=ButtonStates.STANDARD
+            )
+        self.button_pressed = idx
+        self.update_button(
+            game=game,
+            button_idx=self.button_pressed,
+            new_state=ButtonStates.PRESSED
+        )
+        return True
+
+    def ispressed_start(self,
+                        event: pg.event.Event,
+                        game,
+                        ) -> bool:
+        """
+        Check if button is pressed when left mousebutton down
+        :param event: pygame event
+        :param game: Game object
+        :return: bool True:go to next event; False:go to next event manager
+        """
+        # Check for left mousebutton
+        if event.button != 1:
+            return False
+        # Get colliding button index
+        idx = self.get_button_collision(event.pos)
+        # No collision
+        if idx < 0:
+            # Button not over
+            if self.button_over < 0:
+                return False
+            # Button over
+            self.update_button(
+                game=game,
+                button_idx=self.button_over,
+                new_state=ButtonStates.STANDARD
+            )
+            self.button_over = -1
+            return False
+        # Collision
+        self.state = ObjectStates.LEFT_MOUSE_PRESSED
+        # Button not over
+        if self.button_over < 0:
+            self.button_pressed = idx
+            self.update_button(
+                game=game,
+                button_idx=self.button_pressed,
+                new_state=ButtonStates.PRESSED
+            )
+            return True
+        # Button over
+        if self.button_over != idx:
+            self.update_button(
+                game=game,
+                button_idx=self.button_over,
+                new_state=ButtonStates.STANDARD
+            )
+        self.button_over = -1
+        self.button_pressed = idx
+        self.update_button(
+            game=game,
+            button_idx=self.button_pressed,
+            new_state=ButtonStates.PRESSED
+        )
+        return True
+    
+    def isover_menu_opened(self,
+               event: pg.event.Event,
+               game
+               ) -> bool:
+        """
+        Check if mouse is over any button when menu is open
+        :param event: pygame event
+        :param game: Game object
+        :return: bool True:go to next event; False:go to next event manager
+        """
+        # Get colliding button index
+        idx = self.get_button_collision(event.pos)
+        # No collision
+        if idx < 0:
+            return False
+        # Collision
+        # Same button
+        if self.button_pressed == idx:
+            return True
+        # Different button
+        self.update_button(
+            game=game,
+            button_idx=self.button_pressed,
+            new_state=ButtonStates.STANDARD
+        )
+        self.button_pressed = idx
+        self.update_button(
+            game=game,
+            button_idx=self.button_pressed,
+            new_state=ButtonStates.PRESSED
+        )
+        # Action
+        self.button_action(self.button_pressed)
         
-    def on_redraw(self,
-                  surf: pg.Surface,
-                  ) -> pg.Rect:
+    def isover(self,
+               event: pg.event.Event,
+               game
+               ) -> bool:
+        """
+        Check if mouse is over any button
+        :param event: pygame event
+        :param game: Game object
+        :return: bool True:go to next event; False:go to next event manager
+        """
+        # Get colliding button index
+        idx = self.get_button_collision(event.pos)
+        # No collision
+        if idx < 0:
+            # Button not over
+            if self.button_over < 0:
+                return False
+            # Button over
+            self.update_button(
+                game=game,
+                button_idx=self.button_over,
+                new_state=ButtonStates.STANDARD
+            )
+            self.button_over = -1
+            return True
+        # Collision
+        # Button not over
+        if self.button_over < 0:
+            self.button_over = idx
+            self.update_button(
+                game=game,
+                button_idx=self.button_over,
+                new_state=ButtonStates.OVER
+            )
+            return True
+        # Button over
+        self.update_button(
+            game=game,
+            button_idx=self.button_over,
+            new_state=ButtonStates.STANDARD
+        )
+        self.button_over = idx
+        self.update_button(
+            game=game,
+            button_idx=self.button_over,
+            new_state=ButtonStates.OVER
+        )
+        return True
+    
+    def get_button_collision(self,
+                             pos: tuple or list,
+                             ) -> int:
+        """
+        Return colliding button's index
+        :param pos: collision position
+        :return: -1: no collision 0...
+        """
+        if not self.rect.collidepoint(pos):
+            return -1
+        for idx, button in self.buttons.items():
+            if button.rect.collidepoint(pos):
+                return idx
+        return -1
+        
+    def update_button(self,
+                      game,
+                      button_idx: int,
+                      new_state: int,
+                      ):
+        """
+        Draw button
+        :param game: Game object
+        :param button_idx: index of button
+        :param new_state: new button state
+        """
+        game.draw_rect.append(self.buttons[button_idx].update(
+            surf_idx=new_state,
+            surf=game.screen
+        ))
+        
+    def redraw_all(self,
+                   surf: pg.Surface,
+                   ) -> pg.Rect:
         """
         Draw menubar content on surface
         :param surf: surface
@@ -155,4 +415,10 @@ class ButtonStates:
     STANDARD = 0
     PRESSED = 1
     OVER = 2
+    
+    
+class ObjectStates:
+    STANDARD = 0
+    LEFT_MOUSE_PRESSED = 1
+    MENU_OPENED = 2
     
