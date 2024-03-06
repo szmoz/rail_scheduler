@@ -4,9 +4,9 @@ import sys
 
 from code.camera.camera import Camera
 
-from code.game.colors import Colors as C
-from code.game.sizes import Sizes as S
-import code.game.variables as v
+from code.game.color_data import Colors as C
+from code.game.size_data import Sizes as S
+import code.game.variable_data as v
 
 from code.util.event_manager import EventManager
 from code.util.frame import FrameResizable
@@ -83,6 +83,7 @@ class Game:
         # Dynamic variables
         self.frame_length = v.FRAME_LENGTH
         self.running = True
+        self.break_event_loop = False
         self.redraw = True
         self.draw_count = 0  # Testing
         self.draw_rects = []
@@ -98,6 +99,8 @@ class Game:
         while self.running:
             # Event loop
             for event in pg.event.get():
+                if self.break_event_loop:
+                    break
                 if self.event_manager.handle(event):
                     continue
                 
@@ -125,16 +128,31 @@ class Game:
         pg.quit()
         sys.exit()
         
-    def on_quit(self, *args, **kwargs):
+    def on_quit(self, *args, **kwargs) -> bool:
+        """
+        Quit program
+        :return True: go to next event
+        """
         self.running = False
+        self.break_event_loop = True
         return True
     
-    def on_keydown(self, event, *args, **kwargs):
+    def on_keydown(self, event, *args, **kwargs) -> bool:
+        """
+        Quit program
+        :param event: pygame event
+        :return: True: go to next event
+        """
         if event.key != pg.K_ESCAPE:
             return False
         return self.on_quit()
     
-    def on_videoresize(self, event, *args, **kwargs):
+    def on_videoresize(self, event, *args, **kwargs) -> bool:
+        """
+        Change window size and break event loop
+        :param event: pygame event
+        :return: True: go to next event
+        """
         # Set new screen size
         old_screen_size = self.screen_size
         self.screen_width = max(event.w, self.min_screen_size[0])
@@ -147,6 +165,7 @@ class Game:
         self.redraw = True
         if old_screen_size != self.screen_size:
             self.change_content_size()
+        self.break_event_loop = True
         return True
     
     def change_content_size(self):
