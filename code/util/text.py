@@ -44,14 +44,16 @@ class Text(pg.sprite.Sprite):
         self.anchoring = anchor_functions[anchor_type]
         self.anchoring()
     
-    
     def draw(self,
-             surf: pg.Surface):
+             surf: pg.Surface,
+             ) -> pg.Rect:
         """
         Draw Text object on surface
         :param surf: surface
+        :return rect area to update on screen
         """
         surf.blit(self.image, self.rect)
+        return self.rect
     
     def change_text(self,
                     new_text: str):
