@@ -23,8 +23,6 @@ class MenuBar:
                  button_frame_top_color_pressed: tuple or list,
                  button_frame_bottom_color_pressed: tuple or list,
                  button_frame_edge_lines_pressed: tuple or list,
-                 button_frame_top_color_over: tuple or list,
-                 button_frame_bottom_color_over: tuple or list,
                  button_frame_edge_lines_over: tuple or list,
                  button_texts: tuple or list,
                  text_type: str,
@@ -46,8 +44,6 @@ class MenuBar:
         :param button_frame_top_color_pressed: button frame top & left color when button is pressed
         :param button_frame_bottom_color_pressed: button frame bottom & right color when button is pressed
         :param button_frame_edge_lines_pressed: list of pressed button frame edge lines
-        :param button_frame_top_color_over: button frame top & left color when mouse is over button
-        :param button_frame_bottom_color_over: button frame bottom & right color when mouse is over button
         :param button_frame_edge_lines_over: list of mouse-over button frame edge lines
         :param button_texts: list of button texts
         :param text_type: path to '.ttf' file
@@ -87,7 +83,7 @@ class MenuBar:
                 pressed=True,
                 frame_top_color_pressed=button_frame_top_color_pressed,
                 frame_bottom_color_pressed=button_frame_bottom_color_pressed,
-                background_color_pressed=button_background_color,
+                background_color_pressed=button_background_color_pressed,
                 frame_edge_lines_pressed=button_frame_edge_lines_pressed[i],
                 over=True,
                 background_color_over=button_background_color_over,
