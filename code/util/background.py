@@ -21,15 +21,12 @@ class Background(pg.sprite.Sprite):
         
     def draw(self,
              surf: pg.Surface,
-             rect: pg.Rect = None):
+             *args):
         """
         Draw background on surface
         :param surf: Surface
-        :param rect: (optional) draw image only in this area
         """
-        if rect is None:
-            rect = self.rect
-        surf.blit(self.image, rect)
+        surf.blit(self.image, self.rect)
         
         
 class BackgroundResizable(Background):

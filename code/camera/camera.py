@@ -59,7 +59,7 @@ class Camera(pg.sprite.Sprite):
         # Frame
         self.frame.draw(surf)
         # Camera screen
-        self.
+        self.camera_views[self.active_camera_view_idx].draw(surf, self.map_surfs[self.active_camera_view_idx])
         
     def change_size(self,
                     new_size: tuple or list):
