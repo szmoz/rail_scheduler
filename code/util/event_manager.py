@@ -25,14 +25,13 @@ class EventManager:
     def handle(self,
                event: pg.event.Event = None,
                game=None,
-               ):
+               ) -> bool:
         """
         Handle event
         :param event: pygame event
         :param game: Game object
         :return: bool True:action happened, go to next event; False:action did not happen, go to next event manager
         """
-        print(event, game)
         try:
             return self.event_handlers[event.type](event, game)
         except KeyError:
