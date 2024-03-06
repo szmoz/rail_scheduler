@@ -150,6 +150,15 @@ class FrameResizable(Frame):
                  pressed: bool = False,
                  edge_lines: tuple or list = None,
                  ) -> None:
+        """
+        Initialize Resizable Frame object
+        :param rect: rectangle that needs to be framed (inclusively)
+        :param thickness: frame thickness
+        :param top_color: frame left & top color
+        :param bottom_color: frame bottom & right color
+        :param pressed: True: bottomleft & topright corners are squared and topcolored
+        :param edge_lines: +:outer; -:inner; 1:left; 2:top; 3:right; 4:bottom
+        """
         super().__init__(
             rect=rect,
             thickness=thickness,
