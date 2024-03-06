@@ -29,7 +29,7 @@ class EventManager:
         Handle event
         :param event: pygame event
         :param game: Game object
-        :return: bool True:action happened, go to next event; False:action did not happen, go to next event manager
+        :return: bool True:go to next event; False:go to next event manager
         """
         try:
             return self.event_handlers[event.type](event, game)
