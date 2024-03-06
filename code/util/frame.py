@@ -28,7 +28,6 @@ class Frame(pg.sprite.Group):
         """
         # Initialize sprite.Group object
         super().__init__()
-        
         # Data
         self.rect = rect
         self.thickness = thickness
@@ -82,9 +81,9 @@ class Frame(pg.sprite.Group):
                 surface=left.image,
                 color=bottom_color,
                 points=(
-                    left.rect.bottomleft,
-                    left.rect.bottomright,
-                    (left.rect.right, left.rect.bottom - self.thickness)
+                    (0, left.rect.height),
+                    (left.rect.width, left.rect.height),
+                    (left.rect.width, left.rect.height - self.thickness)
                 )
             )
             # Topright corner
@@ -92,9 +91,9 @@ class Frame(pg.sprite.Group):
                 surface=top.image,
                 color=bottom_color,
                 points=(
-                    top.rect.topright,
-                    top.rect.bottomright,
-                    (top.rect.right - self.thickness, top.rect.bottom)
+                    (top.rect.width, 0),
+                    (top.rect.width, top.rect.height),
+                    (top.rect.width - self.thickness, top.rect.height)
                 )
             )
 
