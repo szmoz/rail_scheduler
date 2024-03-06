@@ -2,11 +2,12 @@ import pygame
 import pygame as pg
 import sys
 
+from code.camera.camera import Camera
+
 from code.game.colors import Colors as C
 from code.game.sizes import Sizes as S
 import code.game.variables as v
 
-from code.util.background import Background
 from code.util.event_manager import EventManager
 from code.util.frame import FrameResizable
 
@@ -60,6 +61,18 @@ class Game:
             bottom_color=C.FRAME_CAMERA_GAP,
             pressed=True,
         )
+        # Menubar
+        # Toolbar
+        # Camera
+        self.camera = Camera(
+            rect=pg.Rect(
+                S.FRAME_THICKNESS + S.FRAME_CAMERA_GAP,
+                S.FRAME_THICKNESS + S.MENUBAR_HEIGHT + S.TOOLBAR_HEIGHT + S.TOOLBAR_CAMERA_GAP,
+                self.screen_width - ((S.FRAME_THICKNESS + S.FRAME_CAMERA_GAP) * 2),
+                self.screen_height - (S.FRAME_THICKNESS * 2) -
+                S.MENUBAR_HEIGHT - S.TOOLBAR_HEIGHT - (S.TOOLBAR_CAMERA_GAP * 2)
+            ),
+        )
         
         # Event managers
         self.event_manager = EventManager(
@@ -109,6 +122,7 @@ class Game:
         # Content
         self.frame.draw(self.screen)
         self.frame_camera_gap.draw(self.screen)
+        self.camera.on_redraw(self.screen)
 
     def on_quit(self, *args, **kwargs):
         self.running = False
@@ -142,5 +156,9 @@ class Game:
         self.frame_camera_gap.change_size(
             (self.screen_width - (S.FRAME_THICKNESS * 2),
              self.screen_height - (S.FRAME_THICKNESS * 2) - S.MENUBAR_HEIGHT - S.TOOLBAR_HEIGHT)
+        )
+        self.camera.change_size(
+            (self.screen_width - ((S.FRAME_THICKNESS + S.FRAME_CAMERA_GAP) * 2),
+             self.screen_height - ((S.FRAME_THICKNESS + S.FRAME_CAMERA_GAP) * 2) - S.MENUBAR_HEIGHT - S.TOOLBAR_HEIGHT)
         )
         
