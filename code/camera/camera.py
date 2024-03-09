@@ -50,9 +50,9 @@ class Camera(pg.sprite.Sprite):
         # Dynamic variables
         self.active_camera_view_idx = 0
         
-    def redraw(self,
-               surf: pg.Surface,
-               ) -> pg.Rect:
+    def draw(self,
+             surf: pg.Surface,
+             ) -> pg.Rect:
         """
         Redraw all surface content
         :param surf: surface
