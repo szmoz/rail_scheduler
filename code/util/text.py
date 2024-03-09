@@ -67,6 +67,17 @@ class Text(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.anchoring()
         
+    def change_color(self,
+                     new_color: tuple or list
+                     ) -> None:
+        """
+        Change color of text
+        """
+        self.color = new_color
+        self.image = self.font.render(self.text, True, self.color)
+        self.rect = self.image.get_rect()
+        self.anchoring()
+        
     def change_anchor_pos(self,
                           new_anchor_pos: tuple or list,
                           ) -> None:
