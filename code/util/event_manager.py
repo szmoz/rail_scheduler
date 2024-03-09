@@ -4,6 +4,8 @@ import pygame as pg
 class EventManager:
     """
     Event manager for pygame events
+    Event handler functions receive following parameters:
+     event (pygame.event.Event), game (Game)
     """
     def __init__(self,
                  event_types: tuple or list,
@@ -22,7 +24,7 @@ class EventManager:
             self.event_handlers[event_types[i]] = event_functions[i]
 
     def handle(self,
-               event: pg.event.Event = None,
+               event: pg.event.Event,
                game=None,
                ) -> bool:
         """
@@ -32,7 +34,9 @@ class EventManager:
         :return: bool True:go to next event; False:go to next event manager
         """
         try:
-            return self.event_handlers[event.type](event, game)
+            return self.event_handlers[event.type](
+                event=event,
+                game=game)
         except KeyError:
             return False
         
