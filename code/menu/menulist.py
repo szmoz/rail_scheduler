@@ -1,5 +1,7 @@
 import pygame as pg
 
+from code.menu.states import MenuStates
+
 from code.util.event_manager import EventManager
 from code.util.frame import Frame
 from code.util.text import Text
@@ -127,14 +129,17 @@ class Menulist:
             game.redraw = True
             return False
         # Collision
+        game.menu.process.element = game.menu.menubar.button_pressed * 100 + self.element_over
         self.element_over = -1
-        return game.menu.menubar.close_menu_with_esc(
+        game.menu.menubar.close_menu_with_esc(
             event=pg.event.Event(
                 pg.KEYDOWN,
                 key=pg.K_ESCAPE
             ),
             game=game
         )
+        game.menu.state = MenuStates.PROCESS
+        return True
         
     def isover(self,
                event: pg.event.Event,
