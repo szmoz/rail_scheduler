@@ -12,6 +12,8 @@ import code.game.variable_data as v
 
 from code.menu.menu import Menu
 
+from code.toolbar.toolbar import Toolbar
+
 from code.util.event_manager import EventManager
 from code.util.frame import FrameResizable
 
@@ -86,6 +88,14 @@ class Game:
             )
         )
         # Toolbar
+        self.toolbar = Toolbar(
+            rect=pg.Rect(
+                S.FRAME_THICKNESS,
+                self.menu.menubar.rect.bottom,
+                self.menu.menubar.rect.width,
+                S.TOOLBAR_HEIGHT
+            )
+        )
         # Camera
         self.camera = Camera(
             rect=pg.Rect(
@@ -97,7 +107,7 @@ class Game:
             ),
         )
         
-        # Event management
+        # Local event management
         self.quit_event_manager = EventManager(
             event_types=(pg.QUIT, pg.KEYDOWN),
             event_functions=(self.on_quit, self.on_keydown)
@@ -280,10 +290,12 @@ class Game:
         # Frame and gap
         self.frame.draw(self.screen)
         self.frame_camera_gap.draw(self.screen)
-        # Menu
-        self.menu.draw(self.screen)
-        # Toolbox
+        # Toolbar
+        self.toolbar.draw(self.screen)
         # Camera
         self.camera.draw(self.screen)
+        # Menu
+        self.menu.draw(self.screen)
         # Update rect
+        self.draw_rects.clear()
         self.draw_rects.append(self.screen.get_rect())
