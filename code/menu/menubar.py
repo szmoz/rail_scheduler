@@ -31,7 +31,7 @@ class MenuBar:
                  text_type: str,
                  text_size: int,
                  text_color: tuple or list,
-                 ):
+                 ) -> None:
         """
         Initialize MenuBar object
         :param rect: rectangle area of menubar
@@ -95,28 +95,44 @@ class MenuBar:
             prev_left += button_width
             
         # Event managers
-        self.event_managers = dict()
-        self.event_managers[ObjectStates.STANDARD] = EventManager(
-            event_types=(pg.MOUSEMOTION, pg.MOUSEBUTTONDOWN),
-            event_functions=(self.isover, self.ispressed_start)
-        )
-        self.event_managers[ObjectStates.LEFT_MOUSE_PRESSED] = EventManager(
-            event_types=(pg.MOUSEMOTION, pg.MOUSEBUTTONUP),
-            event_functions=(self.ispressed, self.isclicked)
-        )
-        self.event_managers[ObjectStates.MENU_OPENED] = EventManager(
-            event_types=(pg.MOUSEMOTION),
-            event_functions=(self.isover_menu_opened)
-        )
+        self.event_managers = {
+            MenubarStates.STANDARD: EventManager(
+                event_types=(pg.MOUSEMOTION, pg.MOUSEBUTTONDOWN),
+                event_functions=(self.isover, self.ispressed_start),
+            ),
+            MenubarStates.LEFT_MOUSE_PRESSED: EventManager(
+                event_types=(pg.MOUSEMOTION, pg.MOUSEBUTTONUP),
+                event_functions=(self.ispressed, self.isclicked),
+            ),
+            MenubarStates.MENU_OPENED: EventManager(
+                event_types=(pg.MOUSEMOTION,),
+                event_functions=(self.isover_menu_opened,)
+            ),
+        }
         
         # Dynamic variables
-        self.state = ObjectStates.STANDARD
+        self.state = MenubarStates.STANDARD
         self.button_over = -1
         self.button_pressed = -1
         
+    def event_manager(self,
+                      event: pg.event.Event,
+                      game,
+                      ) -> bool:
+        """
+        Event manager for menubar
+        :param event: pygame event
+        :param game: Game object
+        :return: True: go to next event; False: go to next event manager
+        """
+        return self.event_managers[self.state].handle(
+            event=event,
+            game=game,
+        )
+        
     def button_action(self,
-                      idx: int):
-        print(f"button action: {idx}")
+                      game):
+        pass
     
     def isclicked(self,
                   event: pg.event.Event,
@@ -135,7 +151,7 @@ class MenuBar:
         idx = self.get_button_collision(event.pos)
         # No collision
         if idx < 0:
-            self.state = ObjectStates.STANDARD
+            self.state = MenubarStates.STANDARD
             # Button not pressed
             if self.button_pressed < 0:
                 return True
@@ -148,7 +164,7 @@ class MenuBar:
             self.button_pressed = -1
             return True
         # Collision
-        self.state = ObjectStates.MENU_OPENED
+        self.state = MenubarStates.MENU_OPENED
         # Different button
         if self.button_pressed != idx:
             if self.button_pressed >= 0:
@@ -164,7 +180,7 @@ class MenuBar:
                 new_state=ButtonStates.PRESSED
             )
         # Same button
-        self.button_action(idx)
+        self.button_action(game)
         return True
         
     def ispressed(self,
@@ -240,7 +256,7 @@ class MenuBar:
             self.button_over = -1
             return False
         # Collision
-        self.state = ObjectStates.LEFT_MOUSE_PRESSED
+        self.state = MenubarStates.LEFT_MOUSE_PRESSED
         # Button not over
         if self.button_over < 0:
             self.button_pressed = idx
@@ -267,9 +283,9 @@ class MenuBar:
         return True
     
     def isover_menu_opened(self,
-               event: pg.event.Event,
-               game
-               ) -> bool:
+                           event: pg.event.Event,
+                           game
+                           ) -> bool:
         """
         Check if mouse is over any button when menu is open
         :param event: pygame event
@@ -298,7 +314,7 @@ class MenuBar:
             new_state=ButtonStates.PRESSED
         )
         # Action
-        self.button_action(self.button_pressed)
+        self.button_action(game)
         
     def isover(self,
                event: pg.event.Event,
@@ -380,9 +396,9 @@ class MenuBar:
             surf=game.screen
         ))
         
-    def redraw_all(self,
-                   surf: pg.Surface,
-                   ) -> pg.Rect:
+    def draw(self,
+             surf: pg.Surface,
+             ) -> pg.Rect:
         """
         Draw menubar content on surface
         :param surf: surface
@@ -417,7 +433,7 @@ class ButtonStates:
     OVER = 2
     
     
-class ObjectStates:
+class MenubarStates:
     STANDARD = 0
     LEFT_MOUSE_PRESSED = 1
     MENU_OPENED = 2
