@@ -1,6 +1,8 @@
-import selectors
-
 import pygame as pg
+
+from code.game.states import GameSates
+
+from code.menu.states import MenuStates, MenubarStates
 
 from code.util.background import BackgroundResizable
 from code.util.button import Button
@@ -105,8 +107,8 @@ class MenuBar:
                 event_functions=(self.ispressed, self.isclicked),
             ),
             MenubarStates.MENU_OPENED: EventManager(
-                event_types=(pg.MOUSEMOTION,),
-                event_functions=(self.isover_menu_opened,)
+                event_types=(pg.MOUSEMOTION, pg.MOUSEBUTTONDOWN, pg.KEYDOWN),
+                event_functions=(self.isover_menu_opened, self.ispressed_opened, self.close_menu_with_esc)
             ),
         }
         
@@ -130,9 +132,63 @@ class MenuBar:
             game=game,
         )
         
-    def button_action(self,
-                      game):
-        pass
+    def open_menu(self,
+                  game,
+                  ) -> bool:
+        """
+        Open menu
+        Change menu and menubar states to opened, set opened list index
+        :param game: Game object
+        :return: True: go to next event
+        """
+        self.state = MenubarStates.MENU_OPENED
+        game.menu.state = MenuStates.OPENED
+        game.menu.list_opened = self.button_pressed
+        game.state = GameSates.OPENED_MENU
+        game.redraw = True
+        return True
+    
+    def close_menu(self,
+                   game,
+                   ) -> bool:
+        """
+        Close menu
+        Change menu and menubar states to closed/standard
+        :param game: Game object
+        :return: True: go to next event (+event_loop breaker)
+        """
+        self.state = MenubarStates.STANDARD
+        game.menu.state = MenuStates.CLOSED
+        game.menu.list_opened = -1
+        game.state = game.isopened
+        game.redraw = True
+        game.break_event_loop = True
+        return True
+    
+    def close_menu_with_esc(self,
+                            event: pg.event.Event,
+                            game,
+                            ) -> bool:
+        """
+        Close menu with Escape key
+        :param event: pygame event
+        :param game: Game object
+        :return: True: go to next event (+event_loop breaker)
+        """
+        if event.key != pg.K_ESCAPE:
+            return False
+        button_idx = self.get_button_collision(pos=pg.mouse.get_pos())
+        new_state = ButtonStates.STANDARD
+        if button_idx >= 0:
+            new_state = ButtonStates.OVER
+        self.update_button(
+            game=game,
+            button_idx=self.button_pressed,
+            new_state=new_state
+        )
+        self.button_pressed = -1
+        self.button_over = button_idx
+        return self.close_menu(game)
     
     def isclicked(self,
                   event: pg.event.Event,
@@ -142,7 +198,7 @@ class MenuBar:
         Check if button is clicked when mousebutton up
         :param event: pygame event
         :param game: Game object
-        :return: bool True:go to next event; False:go to next event manager
+        :return: True:go to next event; False:go to next event manager
         """
         # Check for left mousebutton
         if event.button != 1:
@@ -164,7 +220,6 @@ class MenuBar:
             self.button_pressed = -1
             return True
         # Collision
-        self.state = MenubarStates.MENU_OPENED
         # Different button
         if self.button_pressed != idx:
             if self.button_pressed >= 0:
@@ -180,8 +235,7 @@ class MenuBar:
                 new_state=ButtonStates.PRESSED
             )
         # Same button
-        self.button_action(game)
-        return True
+        return self.open_menu(game)
         
     def ispressed(self,
                   event: pg.event.Event,
@@ -191,7 +245,7 @@ class MenuBar:
         Check if button is pressed when mousemotion
         :param event: pygame event
         :param game: Game object
-        :return: bool True:go to next event; False:go to next event manager
+        :return: True:go to next event; False:go to next event manager
         """
         # Get colliding button index
         idx = self.get_button_collision(event.pos)
@@ -235,10 +289,10 @@ class MenuBar:
         Check if button is pressed when left mousebutton down
         :param event: pygame event
         :param game: Game object
-        :return: bool True:go to next event; False:go to next event manager
+        :return: True:go to next event; False:go to next event manager
         """
         # Check for left mousebutton
-        if event.button != 1:
+        if event.button != pg.BUTTON_LEFT:
             return False
         # Get colliding button index
         idx = self.get_button_collision(event.pos)
@@ -282,15 +336,42 @@ class MenuBar:
         )
         return True
     
+    def ispressed_opened(self,
+                         event: pg.event.Event,
+                         game,
+                         ) -> bool:
+        """
+        Check for button press when menubar is opened
+        :param event: pygame event
+        :param game: Game object
+        :return: True:go to next event; False:go to next event manager
+        """
+        if event.button != pg.BUTTON_LEFT:
+            return False
+        # Get colliding button index
+        idx = self.get_button_collision(event.pos)
+        # No collision
+        if idx < 0:
+            return False
+        # Collision
+        self.update_button(
+            game=game,
+            button_idx=self.button_pressed,
+            new_state=ButtonStates.OVER
+        )
+        self.button_pressed = -1
+        self.button_over = idx
+        return self.close_menu(game)
+    
     def isover_menu_opened(self,
                            event: pg.event.Event,
-                           game
+                           game,
                            ) -> bool:
         """
         Check if mouse is over any button when menu is open
         :param event: pygame event
         :param game: Game object
-        :return: bool True:go to next event; False:go to next event manager
+        :return: True:go to next event; False:go to next event manager
         """
         # Get colliding button index
         idx = self.get_button_collision(event.pos)
@@ -314,17 +395,17 @@ class MenuBar:
             new_state=ButtonStates.PRESSED
         )
         # Action
-        self.button_action(game)
+        return self.open_menu(game)
         
     def isover(self,
                event: pg.event.Event,
-               game
+               game,
                ) -> bool:
         """
         Check if mouse is over any button
         :param event: pygame event
         :param game: Game object
-        :return: bool True:go to next event; False:go to next event manager
+        :return: True:go to next event; False:go to next event manager
         """
         # Get colliding button index
         idx = self.get_button_collision(event.pos)
@@ -352,6 +433,10 @@ class MenuBar:
             )
             return True
         # Button over
+        # Same button
+        if self.button_over == idx:
+            return True
+        # Different button
         self.update_button(
             game=game,
             button_idx=self.button_over,
@@ -371,7 +456,7 @@ class MenuBar:
         """
         Return colliding button's index
         :param pos: collision position
-        :return: -1: no collision 0...
+        :return: -1: no collision 0...: colliding button's index
         """
         if not self.rect.collidepoint(pos):
             return -1
@@ -391,7 +476,7 @@ class MenuBar:
         :param button_idx: index of button
         :param new_state: new button state
         """
-        game.draw_rect.append(self.buttons[button_idx].update(
+        game.draw_rects.append(self.buttons[button_idx].update(
             surf_idx=new_state,
             surf=game.screen
         ))
@@ -431,10 +516,4 @@ class ButtonStates:
     STANDARD = 0
     PRESSED = 1
     OVER = 2
-    
-    
-class MenubarStates:
-    STANDARD = 0
-    LEFT_MOUSE_PRESSED = 1
-    MENU_OPENED = 2
     

@@ -6,6 +6,7 @@ from code.camera.camera import Camera
 
 from code.game.color_data import Colors as C
 from code.game.size_data import Sizes as S
+from code.game.states import GameSates
 from code.game.string_data import Strings as GameStrings
 import code.game.variable_data as v
 
@@ -94,7 +95,7 @@ class Game:
             ),
         )
         
-        # Event managers
+        # Event management
         self.quit_event_manager = EventManager(
             event_types=(pg.QUIT, pg.KEYDOWN),
             event_functions=(self.on_quit, self.on_keydown)
@@ -147,10 +148,12 @@ class Game:
         # Event management
         self.break_event_loop = False
         self.state = GameSates.UNOPENED_BASIC
+        self.isopened = GameSates.UNOPENED_BASIC
         # Draw management
         self.redraw = True
         self.draw_count = 0  # Testing
         self.draw_rects = []
+        
         
         # Run game
         self.run()
@@ -169,7 +172,9 @@ class Game:
             if self.redraw:
                 self.draw()
             # Update screen
-            pg.display.update(self.draw_rects)
+            if len(self.draw_rects) > 0:
+                self.draw_count += 1
+                pg.display.update(self.draw_rects)
             self.draw_rects.clear()
             # Wait for next frame
             self.clock.tick(self.frame_length)
@@ -273,7 +278,6 @@ class Game:
         
     def draw(self):
         self.redraw = False
-        self.draw_count += 1  # Testing
         # Clear screen
         self.screen.fill("black")
         # Content
@@ -287,11 +291,3 @@ class Game:
         self.camera.draw(self.screen)
         # Update rect
         self.draw_rects.append(self.screen.get_rect())
-
-
-class GameSates:
-    UNOPENED_BASIC = 0
-    OPENED_BASIC = 1
-    OPENED_MENU = 2
-    WINDOW = 3
-    
