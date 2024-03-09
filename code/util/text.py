@@ -56,7 +56,8 @@ class Text(pg.sprite.Sprite):
         return self.rect
     
     def change_text(self,
-                    new_text: str):
+                    new_text: str,
+                    ) -> None:
         """
         Change text and position according to anchoring point
         """
@@ -64,6 +65,16 @@ class Text(pg.sprite.Sprite):
         self.image = self.font.render(self.text, True, self.color)
         # Rect
         self.rect = self.image.get_rect()
+        self.anchoring()
+        
+    def change_anchor_pos(self,
+                          new_anchor_pos: tuple or list,
+                          ) -> None:
+        """
+        Change anchoring position of Text object
+        :param new_anchor_pos: new anchoring position
+        """
+        self.anchor_pos = new_anchor_pos
         self.anchoring()
 
     def anchor_center(self):
