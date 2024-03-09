@@ -26,6 +26,8 @@ class Game:
         """
         Create Game object and run game
         """
+        print(pg.USEREVENT)
+        print(pg.NUMEVENTS - 1)
         # Data
         self.screen_width = S.SCREEN_WIDTH
         self.screen_height = S.SCREEN_HEIGHT
@@ -154,16 +156,10 @@ class Game:
         self.draw_count = 0  # Testing
         self.draw_rects = []
         
-        
-        # Run game
-        self.run()
-        
     def run(self) -> None:
         """
         Run the game until the program is shut down
         """
-        print(pg.USEREVENT)
-        print(pg.NUMEVENTS - 1)
         # Main game loop
         while self.running:
             # Event loop
