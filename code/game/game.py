@@ -6,6 +6,7 @@ from code.camera.camera import Camera
 
 from code.game.color_data import Colors as C
 from code.game.size_data import Sizes as S
+from code.game.string_data import Strings as GameStrings
 import code.game.variable_data as v
 
 from code.menu.menu import Menu
@@ -29,13 +30,22 @@ class Game:
         self.screen_height = S.SCREEN_HEIGHT
         self.screen_size = (self.screen_width, self.screen_height)
         self.min_screen_size = self.screen_size
+
+        # Icon
+        self.icon = pg.image.load("resources/graphics/icon.png")
+        pg.display.set_icon(pg.image.load("resources/graphics/icon.png"))
         # Initialize pygame
         pygame.init()
+        # Display surface
         self.screen = pg.display.set_mode(
             size=self.screen_size,
             flags=pg.RESIZABLE,
         )
+        # Clock
         self.clock = pg.time.Clock()
+        # Caption
+        self.caption = GameStrings.CAPTION
+        pg.display.set_caption(self.caption)
         
         # Surface content
         # Frame
@@ -174,7 +184,7 @@ class Game:
         Main event loop of game
         """
         for event in pg.event.get():
-            print(event)
+            #print(event)
             for manager_idx in range(len(self.game_event_managers[self.state])):
                 if self.game_event_managers[self.state][manager_idx](
                         event=event,
