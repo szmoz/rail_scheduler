@@ -8,6 +8,8 @@ from code.game.color_data import Colors as C
 from code.game.size_data import Sizes as S
 import code.game.variable_data as v
 
+from code.menu.menu import Menu
+
 from code.util.event_manager import EventManager
 from code.util.frame import FrameResizable
 
@@ -61,7 +63,15 @@ class Game:
             bottom_color=C.FRAME_CAMERA_GAP,
             pressed=True,
         )
-        # Menubar
+        # Menu
+        self.menu = Menu(
+            menu_bar_rect=pg.Rect(
+                S.FRAME_THICKNESS,
+                S.FRAME_THICKNESS,
+                self.screen_width - (S.FRAME_THICKNESS * 2),
+                S.MENUBAR_HEIGHT
+            )
+        )
         # Toolbar
         # Camera
         self.camera = Camera(
@@ -75,18 +85,64 @@ class Game:
         )
         
         # Event managers
-        self.event_manager = EventManager(
-            event_types=(pg.QUIT, pg.KEYDOWN, pg.VIDEORESIZE),
-            event_functions=(self.on_quit, self.on_keydown, self.on_videoresize)
+        self.quit_event_manager = EventManager(
+            event_types=(pg.QUIT, pg.KEYDOWN),
+            event_functions=(self.on_quit, self.on_keydown)
         )
+        self.window_resize_event_manager = EventManager(
+            event_types=[pg.VIDEORESIZE],
+            event_functions=[self.on_videoresize]
+        )
+        self.event_managers = {
+            GameSates.UNOPENED_BASIC: (
+                self.window_resize_event_manager,
+                self.quit_event_manager
+            ),
+            GameSates.OPENED_BASIC: (
+                self.window_resize_event_manager,
+                self.quit_event_manager
+            ),
+            GameSates.OPENED_MENU: (
+                self.window_resize_event_manager,
+                self.quit_event_manager
+            ),
+            GameSates.WINDOW: (
+                self.window_resize_event_manager,
+            )
+        }
+        
+        # Global event management
+        self.game_event_managers = {
+            GameSates.UNOPENED_BASIC: (
+                self.menu.event_manager,
+                self.event_manager,
+            ),
+            GameSates.OPENED_BASIC: (
+                self.menu.event_manager,
+                self.event_manager,
+            ),
+            GameSates.OPENED_MENU: (
+                self.menu.event_manager,
+                self.event_manager,
+            ),
+            GameSates.WINDOW: (
+                self.event_manager,
+            ),
+        }
         
         # Dynamic variables
+        # Run
         self.frame_length = v.FRAME_LENGTH
         self.running = True
+        # Event management
         self.break_event_loop = False
+        self.state = GameSates.UNOPENED_BASIC
+        # Draw management
         self.redraw = True
         self.draw_count = 0  # Testing
         self.draw_rects = []
+        
+        # Run game
         self.run()
         
     def run(self) -> None:
@@ -98,25 +154,10 @@ class Game:
         # Main game loop
         while self.running:
             # Event loop
-            for event in pg.event.get():
-                if self.break_event_loop:
-                    break
-                if self.event_manager.handle(event):
-                    continue
-                
+            self.event_loop()
             # Redraw the full screen
             if self.redraw:
-                self.redraw = False
-                self.draw_count += 1  # Testing
-                # Clear screen
-                self.screen.fill("black")
-                # Content
-                self.frame.draw(self.screen)
-                self.frame_camera_gap.draw(self.screen)
-                self.camera.redraw(self.screen)
-                # Update rect
-                self.draw_rects.append(self.screen.get_rect())
-                
+                self.draw()
             # Update screen
             pg.display.update(self.draw_rects)
             self.draw_rects.clear()
@@ -127,6 +168,36 @@ class Game:
         print(f"Number of draws: {self.draw_count}")  # Testing
         pg.quit()
         sys.exit()
+        
+    def event_loop(self):
+        """
+        Main event loop of game
+        """
+        for event in pg.event.get():
+            print(event)
+            for manager_idx in range(len(self.game_event_managers[self.state])):
+                if self.game_event_managers[self.state][manager_idx](
+                        event=event,
+                        game=self
+                ):
+                    if self.break_event_loop:
+                        self.break_event_loop = False
+                        return
+                    break
+        
+    def event_manager(self,
+                      event: pg.event.Event,
+                      *args, **kwargs,
+                      ) -> bool:
+        """
+        Event manager for basic game events (quit, window resize)
+        :param event: pygame event
+        :return: True: go to next event; False: go to next event manager
+        """
+        for manager_idx in range(len(self.event_managers[self.state])):
+            if self.event_managers[self.state][manager_idx].handle(event):
+                return True
+        return False
         
     def on_quit(self, *args, **kwargs) -> bool:
         """
@@ -172,13 +243,42 @@ class Game:
         """
         Resize all resizable content
         """
+        # Frame
         self.frame.change_size(self.screen_size)
+        # Frame camera gap
         self.frame_camera_gap.change_size(
             (self.screen_width - (S.FRAME_THICKNESS * 2),
              self.screen_height - (S.FRAME_THICKNESS * 2) - S.MENUBAR_HEIGHT - S.TOOLBAR_HEIGHT)
         )
+        # Camera
         self.camera.change_size(
             (self.screen_width - ((S.FRAME_THICKNESS + S.FRAME_CAMERA_GAP) * 2),
              self.screen_height - ((S.FRAME_THICKNESS + S.FRAME_CAMERA_GAP) * 2) - S.MENUBAR_HEIGHT - S.TOOLBAR_HEIGHT)
         )
+        # Menu
+        self.menu.change_size(
+            (self.screen_width - (S.FRAME_THICKNESS * 2),
+             S.MENUBAR_HEIGHT)
+        )
         
+    def draw(self):
+        self.redraw = False
+        self.draw_count += 1  # Testing
+        # Clear screen
+        self.screen.fill("black")
+        # Content
+        self.frame.draw(self.screen)
+        self.frame_camera_gap.draw(self.screen)
+        self.camera.redraw(self.screen)
+        # Update rect
+        self.draw_rects.append(self.screen.get_rect())
+        # Modules
+        # Menu
+
+
+class GameSates:
+    UNOPENED_BASIC = 0
+    OPENED_BASIC = 1
+    OPENED_MENU = 2
+    WINDOW = 3
+    
