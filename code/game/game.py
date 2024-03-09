@@ -122,6 +122,7 @@ class Game:
                 self.quit_event_manager
             ),
             GameSates.OPENED_BASIC: (
+                self.toolbar.event_manager,
                 self.window_resize_event_manager,
                 self.quit_event_manager
             ),
@@ -281,6 +282,10 @@ class Game:
             (self.screen_width - (S.FRAME_THICKNESS * 2),
              S.MENUBAR_HEIGHT)
         )
+        # Toolbar
+        self.toolbar.change_size(
+            (self.menu.menubar.rect.width,
+             S.TOOLBAR_HEIGHT))
         
     def draw(self):
         self.redraw = False
