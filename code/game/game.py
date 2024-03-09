@@ -267,13 +267,16 @@ class Game:
         # Clear screen
         self.screen.fill("black")
         # Content
+        # Frame and gap
         self.frame.draw(self.screen)
         self.frame_camera_gap.draw(self.screen)
-        self.camera.redraw(self.screen)
+        # Menu
+        self.menu.draw(self.screen)
+        # Toolbox
+        # Camera
+        self.camera.draw(self.screen)
         # Update rect
         self.draw_rects.append(self.screen.get_rect())
-        # Modules
-        # Menu
 
 
 class GameSates:
