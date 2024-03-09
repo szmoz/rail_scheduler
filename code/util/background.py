@@ -21,7 +21,7 @@ class Background(pg.sprite.Sprite):
         
     def draw(self,
              surf: pg.Surface,
-             ) -> pg.Rect:
+             *args, **kwargs) -> pg.Rect:
         """
         Draw background on surface
         :param surf: Surface

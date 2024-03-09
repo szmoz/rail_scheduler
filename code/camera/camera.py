@@ -1,8 +1,8 @@
 import pygame as pg
 
 from code.camera.camera_view import CameraView
-from code.camera.colors import Colors as C
-from code.camera.sizes import Sizes as S
+from code.camera.color_data import Colors as C
+from code.camera.size_data import Sizes as S
 
 from code.util.background import BackgroundResizable
 from code.util.frame import FrameResizable
@@ -61,7 +61,9 @@ class Camera(pg.sprite.Sprite):
         # Frame
         self.frame.draw(surf)
         # Camera screen
-        self.camera_views[self.active_camera_view_idx].draw(surf, self.map_surfs[self.active_camera_view_idx])
+        self.camera_views[self.active_camera_view_idx].draw(
+            surf=surf,
+            map_surf=self.map_surfs[self.active_camera_view_idx])
         return self.rect
         
     def change_size(self,
