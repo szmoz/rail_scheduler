@@ -107,8 +107,8 @@ class MenuBar:
                 event_functions=(self.ispressed, self.isclicked),
             ),
             MenubarStates.MENU_OPENED: EventManager(
-                event_types=(pg.MOUSEMOTION, pg.MOUSEBUTTONDOWN, pg.KEYDOWN),
-                event_functions=(self.isover_menu_opened, self.ispressed_opened, self.close_menu_with_esc)
+                event_types=(pg.MOUSEMOTION, pg.MOUSEBUTTONDOWN),
+                event_functions=(self.isover_menu_opened, self.ispressed_opened)
             ),
         }
         
@@ -201,7 +201,7 @@ class MenuBar:
         :return: True:go to next event; False:go to next event manager
         """
         # Check for left mousebutton
-        if event.button != 1:
+        if event.button != pg.BUTTON_LEFT:
             return False
         # Get colliding button index
         idx = self.get_button_collision(event.pos)
@@ -455,7 +455,7 @@ class MenuBar:
                              ) -> int:
         """
         Return colliding button's index
-        :param pos: collision position
+        :param pos: mouse position
         :return: -1: no collision 0...: colliding button's index
         """
         if not self.rect.collidepoint(pos):
