@@ -1,6 +1,7 @@
 import pygame as pg
 
 from code.menu.states import MenuStates
+from code.menu.variable_data import inactive_list_elements
 
 from code.util.event_manager import EventManager
 from code.util.frame import Frame
@@ -129,6 +130,13 @@ class Menulist:
             game.redraw = True
             return False
         # Collision
+        # Inactive element
+        try:
+            if idx in inactive_list_elements[game.menu.process.state.state][game.menu.menubar.button_pressed]:
+                return False
+        except KeyError:
+            pass
+        # Active element
         game.menu.process.element = game.menu.menubar.button_pressed * 100 + self.element_over
         self.element_over = -1
         game.menu.menubar.close_menu_with_esc(

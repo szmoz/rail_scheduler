@@ -3,10 +3,11 @@ import pygame as pg
 from code.menu.color_data import Colors as C
 from code.menu.menubar import MenuBar
 from code.menu.menulist import Menulist
+from code.menu.menu_process import MenuProcess
 from code.menu.size_data import Sizes as S
 from code.menu.states import MenuStates
 from code.menu.string_data import Strings as StringData
-from code.menu.variable_data import ButtonFrameEdgeLines
+from code.menu.variable_data import ButtonFrameEdgeLines, inactive_list_elements
 
 from code.util.event_manager import EventManager
 
@@ -58,6 +59,9 @@ class Menu:
                 text_size=S.LIST_TEXT,
                 text_color=C.LIST_TEXT
             )
+
+        # Menu processor
+        self.process = MenuProcess()
         
         # Event management
         self.close_event_manager = EventManager(
@@ -74,7 +78,11 @@ class Menu:
                 self.menubar.event_manager,
                 self.check_close_event_manager,
             ),
+            MenuStates.PROCESS: (
+                self.process.event_manager,
+            )
         }
+        self.change_list_element_text_colors()
         
         # Dynamic variables
         self.state = MenuStates.CLOSED
@@ -188,6 +196,24 @@ class Menu:
                 self.menubar.rect.height + self.menulists[self.list_opened].rect.height
             )
         return self.menubar.rect
+    
+    def change_list_element_text_colors(self):
+        """
+        Change list element text colors
+        """
+        for list_idx, menulist in self.menulists.items():
+            for text_idx, text in menulist.texts.items():
+                try:
+                    if text_idx in inactive_list_elements[self.process.state.state][list_idx]:
+                        if text.color == C.LIST_TEXT_INACTIVE:
+                            continue
+                        text.change_color(C.LIST_TEXT_INACTIVE)
+                        continue
+                    if text.color == C.LIST_TEXT:
+                        continue
+                    text.change_color(C.LIST_TEXT)
+                except KeyError:
+                    continue
         
     def change_size(self,
                     new_size: tuple or list,
