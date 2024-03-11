@@ -13,7 +13,7 @@ class Button:
     """
     def __init__(self,
                  rect: pg.Rect,
-                 background_color: tuple or list,
+                 background_color: tuple or list = None,
                  frame: bool = False,
                  frame_thickness: int = None,
                  frame_top_color: tuple or list = None,
@@ -31,6 +31,7 @@ class Button:
                  over: bool = False,
                  background_color_over: tuple or list = None,
                  frame_edge_lines_over: tuple or list = None,
+                 image_path: str = None,
                  ):
         """
         Initialize Button object
@@ -50,6 +51,7 @@ class Button:
         :param background_color_pressed: background color when button is pressed
         :param over: True: button has different background when mouse is over button
         :param background_color_over: background color when mouse is over button
+        :param image_path: background image path
         """
         # Rect
         self.rect = rect
@@ -68,6 +70,12 @@ class Button:
         backgrounds = (background_color, background_color_pressed, background_color_over)
         for i in range(surf_count):
             self.surfs[i].fill(backgrounds[i])
+        if image_path is not None:
+            image = pg.image.load(image_path)
+            image = pg.Surface.convert(image)
+            topleft_pos = (0, 0)
+            for i in range(surf_count):
+                self.surfs[i].blit(image, topleft_pos)
         # Frame
         if frame:
             frames = [Frame(
