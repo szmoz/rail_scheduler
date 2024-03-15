@@ -4,15 +4,18 @@ import sys
 
 from code.camera.camera import Camera
 
-from code.program.color_data import Colors as C
-from code.program.size_data import Sizes as S
-from code.program.states import ProgramSates
-from code.program.string_data import Strings as ProgramStrings
-import code.program.variable_data as v
+from code.game.game import Game
 
 from code.map.map import Map
 
 from code.menu.menu import Menu
+
+from code.program.color_data import Colors as C
+from code.program.size_data import Sizes as S
+from code.program.states import FileStates, ProgramSates
+from code.program.string_data import Strings as ProgramStrings
+from code.program.types import FileTypes
+import code.program.variable_data as v
 
 from code.simulation.simulation import Simulation
 
@@ -114,8 +117,8 @@ class Program:
         
         # Files
         self.map = Map()
-        self.schedules = dict()
         self.simulation = Simulation()
+        self.game = Game()
         
         # Local event management
         self.quit_event_manager = EventManager(
@@ -169,6 +172,9 @@ class Program:
         # Run
         self.frame_length = v.FRAME_LENGTH
         self.running = True
+        # Files
+        self.file_type = FileTypes.NO
+        self.file_state = FileStates.EMPTY
         # Event management
         self.break_event_loop = False
         self.state = ProgramSates.UNOPENED_BASIC
@@ -177,6 +183,9 @@ class Program:
         self.redraw = True
         self.draw_count = 0  # Testing
         self.draw_rects = []
+        
+        # Data setting
+        self.menu.set_inactive_list_elements(self)
         
     def run(self) -> None:
         """
@@ -318,3 +327,10 @@ class Program:
         # Update rect
         self.draw_rects.clear()
         self.draw_rects.append(self.screen.get_rect())
+        
+    def get_file_code(self) -> int:
+        """
+        Get file code
+        :return: file_type * 10 + file_state
+        """
+        return self.file_type * 10 + self.file_state

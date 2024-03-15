@@ -1,6 +1,6 @@
 import pygame as pg
 
-from code.menu.states import MenuStates
+from code.menu.color_data import Colors
 
 from code.util.event_manager import EventManager
 from code.util.frame import Frame
@@ -130,6 +130,8 @@ class Menulist:
             return False
         # Collision
         # Inactive element
+        if self.texts[idx].color == Colors.LIST_TEXT_INACTIVE:
+            return True
         # Active element
         menubar_button_idx = program.menu.menubar.button_pressed
         list_element_idx = self.element_over
@@ -163,7 +165,7 @@ class Menulist:
                 return False
             # Element over
             self.element_over = -1
-            program.redraw = True
+            self.update_elements(program)
             return True
         # Collision
         # Element not over
@@ -177,7 +179,7 @@ class Menulist:
             return True
         # Different button
         self.element_over = idx
-        program.redraw = True
+        self.update_elements(program)
         return True
         
     def update_elements(self,

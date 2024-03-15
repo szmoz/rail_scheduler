@@ -7,8 +7,9 @@ from code.menu.menu_process import MenuProcess
 from code.menu.size_data import Sizes as S
 from code.menu.states import MenuStates
 from code.menu.string_data import Strings as StringData
-from code.menu.variable_data import ButtonFrameEdgeLines
+from code.menu.variable_data import ButtonFrameEdgeLines, inactive_menulist_elements
 
+from code.util.colors import Colors as BasicColors
 from code.util.event_manager import EventManager
 
 
@@ -171,6 +172,26 @@ class Menu:
             ),
             program=program)
         return False
+    
+    def set_inactive_list_elements(self,
+                                   program,
+                                   ) -> None:
+        """
+        Set menulist element text colors
+        :param program: Program object
+        """
+        file_code = program.get_file_code()
+        for button_idx, button in self.menubar.buttons.items():
+            for el_idx, element in self.menulists[button_idx].texts.items():
+                try:
+                    if el_idx in inactive_menulist_elements[file_code][button_idx]:
+                        if self.menulists[button_idx].texts[el_idx].color == C.LIST_TEXT_INACTIVE:
+                            continue
+                        self.menulists[button_idx].texts[el_idx].change_color(C.LIST_TEXT_INACTIVE)
+                except KeyError:
+                    if self.menulists[button_idx].texts[el_idx].color == C.LIST_TEXT:
+                        continue
+                    self.menulists[button_idx].texts[el_idx].change_color(C.LIST_TEXT)
     
     def draw(self,
              surf: pg.Surface
