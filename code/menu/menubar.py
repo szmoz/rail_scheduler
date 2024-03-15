@@ -1,6 +1,6 @@
 import pygame as pg
 
-from code.game.states import GameSates
+from code.program.states import ProgramSates
 
 from code.menu.states import MenuStates, MenubarStates
 
@@ -119,60 +119,59 @@ class MenuBar:
         
     def event_manager(self,
                       event: pg.event.Event,
-                      game,
+                      program,
                       ) -> bool:
         """
         Event manager for menubar
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True: go to next event; False: go to next event manager
         """
         return self.event_managers[self.state].handle(
             event=event,
-            game=game,
-        )
+            program=program)
         
     def open_menu(self,
-                  game,
+                  program,
                   ) -> bool:
         """
         Open menu
         Change menu and menubar states to opened, set opened list index
-        :param game: Game object
+        :param program: Program object
         :return: True: go to next event
         """
         self.state = MenubarStates.MENU_OPENED
-        game.menu.state = MenuStates.OPENED
-        game.menu.list_opened = self.button_pressed
-        game.state = GameSates.OPENED_MENU
-        game.redraw = True
+        program.menu.state = MenuStates.OPENED
+        program.menu.list_opened = self.button_pressed
+        program.state = ProgramSates.OPENED_MENU
+        program.redraw = True
         return True
     
     def close_menu(self,
-                   game,
+                   program,
                    ) -> bool:
         """
         Close menu
         Change menu and menubar states to closed/standard
-        :param game: Game object
+        :param program: Program object
         :return: True: go to next event (+event_loop breaker)
         """
         self.state = MenubarStates.STANDARD
-        game.menu.state = MenuStates.CLOSED
-        game.menu.list_opened = -1
-        game.state = game.isopened
-        game.redraw = True
-        game.break_event_loop = True
+        program.menu.state = MenuStates.CLOSED
+        program.menu.list_opened = -1
+        program.state = program.isopened
+        program.redraw = True
+        program.break_event_loop = True
         return True
     
     def close_menu_with_esc(self,
                             event: pg.event.Event,
-                            game,
+                            program,
                             ) -> bool:
         """
         Close menu with Escape key
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True: go to next event (+event_loop breaker)
         """
         if event.key != pg.K_ESCAPE:
@@ -182,22 +181,22 @@ class MenuBar:
         if button_idx >= 0:
             new_state = ButtonStates.OVER
         self.update_button(
-            game=game,
+            program=program,
             button_idx=self.button_pressed,
             new_state=new_state
         )
         self.button_pressed = -1
         self.button_over = button_idx
-        return self.close_menu(game)
+        return self.close_menu(program)
     
     def isclicked(self,
                   event: pg.event.Event,
-                  game,
+                  program,
                   ) -> bool:
         """
         Check if button is clicked when mousebutton up
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True:go to next event; False:go to next event manager
         """
         # Check for left mousebutton
@@ -213,7 +212,7 @@ class MenuBar:
                 return True
             # Button pressed
             self.update_button(
-                game=game,
+                program=program,
                 button_idx=self.button_pressed,
                 new_state=ButtonStates.STANDARD
             )
@@ -224,27 +223,27 @@ class MenuBar:
         if self.button_pressed != idx:
             if self.button_pressed >= 0:
                 self.update_button(
-                    game=game,
+                    program=program,
                     button_idx=self.button_pressed,
                     new_state=ButtonStates.STANDARD
                 )
             self.button_pressed = idx
             self.update_button(
-                game=game,
+                program=program,
                 button_idx=self.button_pressed,
                 new_state=ButtonStates.PRESSED
             )
         # Same button
-        return self.open_menu(game)
+        return self.open_menu(program)
         
     def ispressed(self,
                   event: pg.event.Event,
-                  game,
+                  program,
                   ) -> bool:
         """
         Check if button is pressed when mousemotion
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True:go to next event; False:go to next event manager
         """
         # Get colliding button index
@@ -256,7 +255,7 @@ class MenuBar:
                 return False
             # Button pressed
             self.update_button(
-                game=game,
+                program=program,
                 button_idx=self.button_pressed,
                 new_state=ButtonStates.STANDARD
             )
@@ -269,13 +268,13 @@ class MenuBar:
         # Different button
         if self.button_pressed >= 0:
             self.update_button(
-                game=game,
+                program=program,
                 button_idx=self.button_pressed,
                 new_state=ButtonStates.STANDARD
             )
         self.button_pressed = idx
         self.update_button(
-            game=game,
+            program=program,
             button_idx=self.button_pressed,
             new_state=ButtonStates.PRESSED
         )
@@ -283,12 +282,12 @@ class MenuBar:
 
     def ispressed_start(self,
                         event: pg.event.Event,
-                        game,
+                        program,
                         ) -> bool:
         """
         Check if button is pressed when left mousebutton down
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True:go to next event; False:go to next event manager
         """
         # Check for left mousebutton
@@ -303,7 +302,7 @@ class MenuBar:
                 return False
             # Button over
             self.update_button(
-                game=game,
+                program=program,
                 button_idx=self.button_over,
                 new_state=ButtonStates.STANDARD
             )
@@ -315,7 +314,7 @@ class MenuBar:
         if self.button_over < 0:
             self.button_pressed = idx
             self.update_button(
-                game=game,
+                program=program,
                 button_idx=self.button_pressed,
                 new_state=ButtonStates.PRESSED
             )
@@ -323,14 +322,14 @@ class MenuBar:
         # Button over
         if self.button_over != idx:
             self.update_button(
-                game=game,
+                program=program,
                 button_idx=self.button_over,
                 new_state=ButtonStates.STANDARD
             )
         self.button_over = -1
         self.button_pressed = idx
         self.update_button(
-            game=game,
+            program=program,
             button_idx=self.button_pressed,
             new_state=ButtonStates.PRESSED
         )
@@ -338,12 +337,12 @@ class MenuBar:
     
     def ispressed_opened(self,
                          event: pg.event.Event,
-                         game,
+                         program,
                          ) -> bool:
         """
         Check for button press when menubar is opened
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True:go to next event; False:go to next event manager
         """
         if event.button != pg.BUTTON_LEFT:
@@ -355,22 +354,22 @@ class MenuBar:
             return False
         # Collision
         self.update_button(
-            game=game,
+            program=program,
             button_idx=self.button_pressed,
             new_state=ButtonStates.OVER
         )
         self.button_pressed = -1
         self.button_over = idx
-        return self.close_menu(game)
+        return self.close_menu(program)
     
     def isover_menu_opened(self,
                            event: pg.event.Event,
-                           game,
+                           program,
                            ) -> bool:
         """
         Check if mouse is over any button when menu is open
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True:go to next event; False:go to next event manager
         """
         # Get colliding button index
@@ -384,27 +383,27 @@ class MenuBar:
             return True
         # Different button
         self.update_button(
-            game=game,
+            program=program,
             button_idx=self.button_pressed,
             new_state=ButtonStates.STANDARD
         )
         self.button_pressed = idx
         self.update_button(
-            game=game,
+            program=program,
             button_idx=self.button_pressed,
             new_state=ButtonStates.PRESSED
         )
         # Action
-        return self.open_menu(game)
+        return self.open_menu(program)
         
     def isover(self,
                event: pg.event.Event,
-               game,
+               program,
                ) -> bool:
         """
         Check if mouse is over any button
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True:go to next event; False:go to next event manager
         """
         # Get colliding button index
@@ -416,7 +415,7 @@ class MenuBar:
                 return False
             # Button over
             self.update_button(
-                game=game,
+                program=program,
                 button_idx=self.button_over,
                 new_state=ButtonStates.STANDARD
             )
@@ -427,7 +426,7 @@ class MenuBar:
         if self.button_over < 0:
             self.button_over = idx
             self.update_button(
-                game=game,
+                program=program,
                 button_idx=self.button_over,
                 new_state=ButtonStates.OVER
             )
@@ -438,13 +437,13 @@ class MenuBar:
             return True
         # Different button
         self.update_button(
-            game=game,
+            program=program,
             button_idx=self.button_over,
             new_state=ButtonStates.STANDARD
         )
         self.button_over = idx
         self.update_button(
-            game=game,
+            program=program,
             button_idx=self.button_over,
             new_state=ButtonStates.OVER
         )
@@ -466,19 +465,19 @@ class MenuBar:
         return -1
         
     def update_button(self,
-                      game,
+                      program,
                       button_idx: int,
                       new_state: int,
                       ):
         """
         Draw button
-        :param game: Game object
+        :param program: Program object
         :param button_idx: index of button
         :param new_state: new button state
         """
-        game.draw_rects.append(self.buttons[button_idx].update(
+        program.draw_rects.append(self.buttons[button_idx].update(
             surf_idx=new_state,
-            surf=game.screen
+            surf=program.screen
         ))
         
     def draw(self,

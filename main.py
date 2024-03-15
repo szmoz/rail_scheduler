@@ -1,6 +1,6 @@
-from code.game.game import Game
+from code.program.program import Program
 
 
 if __name__ == '__main__':
-    app = Game()
+    app = Program()
     app.run()

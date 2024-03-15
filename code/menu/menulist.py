@@ -1,7 +1,6 @@
 import pygame as pg
 
 from code.menu.states import MenuStates
-from code.menu.variable_data import inactive_list_elements
 
 from code.util.event_manager import EventManager
 from code.util.frame import Frame
@@ -107,12 +106,12 @@ class Menulist:
         
     def isclicked(self,
                   event: pg.event.Event,
-                  game,
+                  program,
                   ) -> bool:
         """
         Check if element is clicked when mousebutton down
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True:go to next event (+event_loop breaker); False:go to next event manager
         """
         # Check for left mousebutton
@@ -127,36 +126,32 @@ class Menulist:
                 return False
             # Element over
             self.element_over = -1
-            game.redraw = True
+            program.redraw = True
             return False
         # Collision
         # Inactive element
-        try:
-            if idx in inactive_list_elements[game.menu.process.state.state][game.menu.menubar.button_pressed]:
-                return False
-        except KeyError:
-            pass
         # Active element
-        game.menu.process.element = game.menu.menubar.button_pressed * 100 + self.element_over
+        menubar_button_idx = program.menu.menubar.button_pressed
+        list_element_idx = self.element_over
+        # Reset menu
         self.element_over = -1
-        game.menu.menubar.close_menu_with_esc(
-            event=pg.event.Event(
-                pg.KEYDOWN,
-                key=pg.K_ESCAPE
-            ),
-            game=game
-        )
-        game.menu.state = MenuStates.PROCESS
+        program.menu.menubar.close_menu_with_esc(event=pg.event.Event(
+            pg.KEYDOWN,
+            key=pg.K_ESCAPE
+        ), program=program)
+        # Start menu process action
+        program.menu.process.start_new_action(menubar_button_idx=menubar_button_idx, list_element_idx=list_element_idx,
+                                              program=program)
         return True
         
     def isover(self,
                event: pg.event.Event,
-               game,
+               program,
                ) -> bool:
         """
         Check if mouse is over any element
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True:go to next event; False:go to next event manager
         """
         # Get colliding button index
@@ -168,13 +163,13 @@ class Menulist:
                 return False
             # Element over
             self.element_over = -1
-            game.redraw = True
+            program.redraw = True
             return True
         # Collision
         # Element not over
         if self.element_over < 0:
             self.element_over = idx
-            self.update_elements(game)
+            self.update_elements(program)
             return True
         # Element over
         # Same button
@@ -182,17 +177,17 @@ class Menulist:
             return True
         # Different button
         self.element_over = idx
-        game.redraw = True
+        program.redraw = True
         return True
         
     def update_elements(self,
-                        game,
+                        program,
                         ) -> None:
         """
         Redraw elements
-        :param game: Game object
+        :param program: Program object
         """
-        game.draw_rects.append(self.draw(game.screen))
+        program.draw_rects.append(self.draw(program.screen))
         
     def get_element_collision(self,
                               pos: tuple or list,

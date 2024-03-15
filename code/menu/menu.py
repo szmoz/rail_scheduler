@@ -7,7 +7,7 @@ from code.menu.menu_process import MenuProcess
 from code.menu.size_data import Sizes as S
 from code.menu.states import MenuStates
 from code.menu.string_data import Strings as StringData
-from code.menu.variable_data import ButtonFrameEdgeLines, inactive_list_elements
+from code.menu.variable_data import ButtonFrameEdgeLines
 
 from code.util.event_manager import EventManager
 
@@ -82,7 +82,6 @@ class Menu:
                 self.process.event_manager,
             )
         }
-        self.change_list_element_text_colors()
         
         # Dynamic variables
         self.state = MenuStates.CLOSED
@@ -90,61 +89,60 @@ class Menu:
         
     def event_manager(self,
                       event: pg.event.Event,
-                      game,
+                      program,
                       ) -> bool:
         """
         Event manager for menu
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True: go to next event; False: go to next event manager
         """
         for manager_idx in range(len(self.event_managers[self.state])):
+            if program.break_event_loop:
+                return True
             if self.event_managers[self.state][manager_idx](
-                event=event,
-                game=game
-            ):
+                    event=event,
+                    program=program,):
                 return True
         return False
         
     def menulist_event_manager(self,
                                event: pg.event.Event,
-                               game,
+                               program,
                                ) -> bool:
         """
         Event manager for menulist
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True: go to next event; False: go to next event manager
         """
         return self.menulists[self.list_opened].event_manager.handle(
             event=event,
-            game=game
-        )
+            program=program)
     
     def check_close_event_manager(self,
                                   event: pg.event.Event,
-                                  game,
+                                  program,
                                   ) -> bool:
         """
         Event manager for menu closing
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True: go to next event; False: go to next event manager
         """
         return self.close_event_manager.handle(
             event=event,
-            game=game
-        )
+            program=program)
     
     def click_outside(self,
                       event: pg.event.Event,
-                      game,
+                      program,
                       ) -> bool:
         """
         Close menu
         Click is outside of menubar buttons and active menulist elements (can be menulist frame)
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True:go to next event; False:go to next event manager
         """
         # Collision with Menulist frame
@@ -156,24 +154,22 @@ class Menu:
                 pg.KEYDOWN,
                 key=pg.K_ESCAPE
             ),
-            game=game
-        )
+            program=program)
         
     def close_menu_quit(self,
-                        game=None,
+                        program=None,
                         *args, **kwargs) -> bool:
         """
         Close menu when quit
-        :param game: Game object
-        :return: False: go to next manager (event has to get to game's quit_event_manager)
+        :param program: Program object
+        :return: False: go to next manager (event has to get to program's quit_event_manager)
         """
         self.menubar.close_menu_with_esc(
             event=pg.event.Event(
                 pg.KEYDOWN,
                 key=pg.K_ESCAPE
             ),
-            game=game
-        )
+            program=program)
         return False
     
     def draw(self,
@@ -195,26 +191,12 @@ class Menu:
                 self.menubar.rect.width,
                 self.menubar.rect.height + self.menulists[self.list_opened].rect.height
             )
+        if len(self.process.window) > 0:
+            for window in self.process.window.values():
+                window.draw(surf)
+            return surf.get_rect()
         return self.menubar.rect
     
-    def change_list_element_text_colors(self):
-        """
-        Change list element text colors
-        """
-        for list_idx, menulist in self.menulists.items():
-            for text_idx, text in menulist.texts.items():
-                try:
-                    if text_idx in inactive_list_elements[self.process.state.state][list_idx]:
-                        if text.color == C.LIST_TEXT_INACTIVE:
-                            continue
-                        text.change_color(C.LIST_TEXT_INACTIVE)
-                        continue
-                    if text.color == C.LIST_TEXT:
-                        continue
-                    text.change_color(C.LIST_TEXT)
-                except KeyError:
-                    continue
-        
     def change_size(self,
                     new_size: tuple or list,
                     ) -> None:

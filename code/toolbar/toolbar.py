@@ -49,18 +49,15 @@ class Toolbar:
         
     def event_manager(self,
                       event: pg.event.Event,
-                      game,
+                      program,
                       ) -> bool:
         """
         Event manager for menu
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: True: go to next event; False: go to next event manager
         """
-        return self.event_managers[self.state].handle(
-            event=event,
-            game=game
-        )
+        return self.event_managers[self.state].handle(event=event)
     
     def draw(self,
              surf: pg.Surface

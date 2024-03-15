@@ -4,13 +4,17 @@ import sys
 
 from code.camera.camera import Camera
 
-from code.game.color_data import Colors as C
-from code.game.size_data import Sizes as S
-from code.game.states import GameSates
-from code.game.string_data import Strings as GameStrings
-import code.game.variable_data as v
+from code.program.color_data import Colors as C
+from code.program.size_data import Sizes as S
+from code.program.states import ProgramSates
+from code.program.string_data import Strings as ProgramStrings
+import code.program.variable_data as v
+
+from code.map.map import Map
 
 from code.menu.menu import Menu
+
+from code.simulation.simulation import Simulation
 
 from code.toolbar.toolbar import Toolbar
 
@@ -18,7 +22,7 @@ from code.util.event_manager import EventManager
 from code.util.frame import FrameResizable
 
 
-class Game:
+class Program:
     """
     Main object of program
     Contains every object of program
@@ -26,7 +30,7 @@ class Game:
     """
     def __init__(self) -> None:
         """
-        Create Game object and run game
+        Create Program object and run program
         """
         print(pg.USEREVENT)
         print(pg.NUMEVENTS - 1)
@@ -36,6 +40,7 @@ class Game:
         self.screen_size = (self.screen_width, self.screen_height)
         self.min_screen_size = self.screen_size
 
+        # Pygame settings
         # Icon
         self.icon = pg.image.load("resources/graphics/icon.png")
         pg.display.set_icon(pg.image.load("resources/graphics/icon.png"))
@@ -49,7 +54,7 @@ class Game:
         # Clock
         self.clock = pg.time.Clock()
         # Caption
-        self.caption = GameStrings.CAPTION
+        self.caption = ProgramStrings.CAPTION
         pg.display.set_caption(self.caption)
         
         # Surface content
@@ -107,6 +112,11 @@ class Game:
             ),
         )
         
+        # Files
+        self.map = Map()
+        self.schedules = dict()
+        self.simulation = Simulation()
+        
         # Local event management
         self.quit_event_manager = EventManager(
             event_types=(pg.QUIT, pg.KEYDOWN),
@@ -117,39 +127,40 @@ class Game:
             event_functions=[self.on_videoresize]
         )
         self.event_managers = {
-            GameSates.UNOPENED_BASIC: (
+            ProgramSates.UNOPENED_BASIC: (
                 self.window_resize_event_manager,
                 self.quit_event_manager
             ),
-            GameSates.OPENED_BASIC: (
-                self.toolbar.event_manager,
+            ProgramSates.OPENED_BASIC: (
                 self.window_resize_event_manager,
                 self.quit_event_manager
             ),
-            GameSates.OPENED_MENU: (
+            ProgramSates.OPENED_MENU: (
                 self.window_resize_event_manager,
                 self.quit_event_manager
             ),
-            GameSates.WINDOW: (
+            ProgramSates.WINDOW: (
                 self.window_resize_event_manager,
             )
         }
         
         # Global event management
-        self.game_event_managers = {
-            GameSates.UNOPENED_BASIC: (
+        self.program_event_managers = {
+            ProgramSates.UNOPENED_BASIC: (
                 self.menu.event_manager,
                 self.event_manager,
             ),
-            GameSates.OPENED_BASIC: (
+            ProgramSates.OPENED_BASIC: (
+                #self.toolbar.event_manager,
                 self.menu.event_manager,
                 self.event_manager,
             ),
-            GameSates.OPENED_MENU: (
+            ProgramSates.OPENED_MENU: (
                 self.menu.event_manager,
                 self.event_manager,
             ),
-            GameSates.WINDOW: (
+            ProgramSates.WINDOW: (
+                self.menu.process.event_manager,
                 self.event_manager,
             ),
         }
@@ -160,8 +171,8 @@ class Game:
         self.running = True
         # Event management
         self.break_event_loop = False
-        self.state = GameSates.UNOPENED_BASIC
-        self.isopened = GameSates.UNOPENED_BASIC
+        self.state = ProgramSates.UNOPENED_BASIC
+        self.isopened = ProgramSates.UNOPENED_BASIC
         # Draw management
         self.redraw = True
         self.draw_count = 0  # Testing
@@ -169,9 +180,9 @@ class Game:
         
     def run(self) -> None:
         """
-        Run the game until the program is shut down
+        Run the program until the program is shut down
         """
-        # Main game loop
+        # Main program loop
         while self.running:
             # Event loop
             self.event_loop()
@@ -193,14 +204,14 @@ class Game:
         
     def event_loop(self):
         """
-        Main event loop of game
+        Main event loop of program
         """
         for event in pg.event.get():
             #print(event)
-            for manager_idx in range(len(self.game_event_managers[self.state])):
-                if self.game_event_managers[self.state][manager_idx](
+            for manager_idx in range(len(self.program_event_managers[self.state])):
+                if self.program_event_managers[self.state][manager_idx](
                         event=event,
-                        game=self
+                        program=self
                 ):
                     if self.break_event_loop:
                         self.break_event_loop = False
@@ -212,7 +223,7 @@ class Game:
                       *args, **kwargs,
                       ) -> bool:
         """
-        Event manager for basic game events (quit, window resize)
+        Event manager for basic program events (quit, window resize)
         :param event: pygame event
         :return: True: go to next event; False: go to next event manager
         """
@@ -282,6 +293,9 @@ class Game:
             (self.screen_width - (S.FRAME_THICKNESS * 2),
              S.MENUBAR_HEIGHT)
         )
+        if self.state == ProgramSates.WINDOW:
+            for window in self.menu.process.window.values():
+                window.reposition(self.screen.get_rect().center)
         # Toolbar
         self.toolbar.change_size(
             (self.menu.menubar.rect.width,

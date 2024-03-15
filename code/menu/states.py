@@ -1,6 +1,7 @@
 class MenuStates:
     CLOSED = 0
     OPENED = 1
+    PROCESS = 2
     
     
 class MenubarStates:

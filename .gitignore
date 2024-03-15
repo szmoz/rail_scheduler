@@ -1,5 +1,5 @@
 .idea/
 code/__pycache__/
-code/game/__pycache__/
+code/program/__pycache__/
 code/util/__pycache__/
-
+notes.txt

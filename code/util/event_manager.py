@@ -5,7 +5,7 @@ class EventManager:
     """
     Event manager for pygame events
     Event handler functions receive following parameters:
-     event (pygame.event.Event), game (Game)
+     event (pygame.event.Event), program (Program)
     """
     def __init__(self,
                  event_types: tuple or list,
@@ -25,18 +25,18 @@ class EventManager:
 
     def handle(self,
                event: pg.event.Event,
-               game=None,
+               program=None,
                ) -> bool:
         """
         Handle event
         :param event: pygame event
-        :param game: Game object
+        :param program: Program object
         :return: bool True:go to next event; False:go to next event manager
         """
         try:
             return self.event_handlers[event.type](
                 event=event,
-                game=game)
+                program=program)
         except KeyError:
             return False
         

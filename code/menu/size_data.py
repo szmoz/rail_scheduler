@@ -1,4 +1,4 @@
-from code.game.size_data import Sizes as GameSizes
+from code.program.size_data import Sizes as GameSizes
 
 
 class Sizes:
