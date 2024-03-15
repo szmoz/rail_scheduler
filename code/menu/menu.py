@@ -188,10 +188,12 @@ class Menu:
                         if self.menulists[button_idx].texts[el_idx].color == C.LIST_TEXT_INACTIVE:
                             continue
                         self.menulists[button_idx].texts[el_idx].change_color(C.LIST_TEXT_INACTIVE)
-                except KeyError:
+                        continue
                     if self.menulists[button_idx].texts[el_idx].color == C.LIST_TEXT:
                         continue
                     self.menulists[button_idx].texts[el_idx].change_color(C.LIST_TEXT)
+                except KeyError:
+                    pass
     
     def draw(self,
              surf: pg.Surface
