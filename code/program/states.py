@@ -4,3 +4,12 @@ class ProgramSates:
     OPENED_MENU = 2
     WINDOW = 3
     
+    
+class FileStates:
+    NO = -1
+    EMPTY = 0
+    NEW = 1
+    MODIFIED = 2
+    MOD = MODIFIED
+    SAVED = 3
+    
