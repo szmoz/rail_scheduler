@@ -233,6 +233,8 @@ class Window:
                 button_idx=self.button_pressed,
                 new_state=ButtonStates.STANDARD
             )
+        self.button_pressed = -1
+        self.button_state = ButtonEventStates.STANDARD
         # Create button clicked event
         self.create_button_clicked_event(program, idx)
         program.break_event_loop = True
