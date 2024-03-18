@@ -353,21 +353,16 @@ class Window:
         self.rect.x += x_diff
         self.rect.y += y_diff
         # Topline
-        self.topline.rect.x += x_diff
-        self.topline.rect.y += y_diff
+        self.topline.reposition(x_diff, y_diff)
         # Background
-        self.background.rect.x += x_diff
-        self.background.rect.y += y_diff
+        self.background.reposition(x_diff, y_diff)
         # Frame
-        for frame_sprite in self.frame.sprites():
-            frame_sprite.rect.x += x_diff
-            frame_sprite.rect.y += y_diff
+        self.frame.reposition(x_diff, y_diff)
         # Title
         self.title.rect.x += x_diff
         self.title.rect.y += y_diff
         # Buttons
         for button in self.buttons.values():
-            button.rect.x += x_diff
-            button.rect.y += y_diff
+            button.reposition(x_diff, y_diff)
         return x_diff, y_diff
         

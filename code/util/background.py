@@ -29,6 +29,18 @@ class Background(pg.sprite.Sprite):
         """
         surf.blit(self.image, self.rect)
         return self.rect
+    
+    def reposition(self,
+                   x_diff: int = 0,
+                   y_diff: int = 0,
+                   ) -> None:
+        """
+        Reposition textbox
+        :param x_diff: x difference to add
+        :param y_diff: y difference to add
+        """
+        self.rect.x += x_diff
+        self.rect.y += y_diff
         
         
 class BackgroundResizable(Background):

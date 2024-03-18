@@ -164,4 +164,16 @@ class Button:
         """
         self.actual = surf_idx
         return self.draw(surf)
+
+    def reposition(self,
+                   x_diff: int = 0,
+                   y_diff: int = 0,
+                   ) -> None:
+        """
+        Reposition textbox
+        :param x_diff: x difference to add
+        :param y_diff: y difference to add
+        """
+        self.rect.x += x_diff
+        self.rect.y += y_diff
     

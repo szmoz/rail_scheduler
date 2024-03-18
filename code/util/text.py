@@ -79,7 +79,7 @@ class Text(pg.sprite.Sprite):
         self.anchoring()
         
     def change_anchor_pos(self,
-                          new_anchor_pos: tuple or list,
+                          new_anchor_pos: tuple,
                           ) -> None:
         """
         Change anchoring position of Text object
@@ -102,3 +102,20 @@ class Text(pg.sprite.Sprite):
 
     def anchor_bottomright(self):
         self.rect.bottomright = self.anchor_pos
+
+    def reposition(self,
+                   x_diff: int = 0,
+                   y_diff: int = 0,
+                   ) -> None:
+        """
+        Reposition textbox
+        :param x_diff: x difference to add
+        :param y_diff: y difference to add
+        """
+        self.rect.x += x_diff
+        self.rect.y += y_diff
+        self.anchor_pos = (
+            self.anchor_pos[0] + x_diff,
+            self.anchor_pos[1] + y_diff
+        )
+        

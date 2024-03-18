@@ -139,6 +139,19 @@ class Frame(pg.sprite.Group):
             line.rect = line.image.get_rect()
             line.rect.topleft = edge_surf_data[line_idx][0]
             
+    def reposition(self,
+                   x_diff: int = 0,
+                   y_diff: int = 0,
+                   ) -> None:
+        """
+        Reposition textbox
+        :param x_diff: x difference to add
+        :param y_diff: y difference to add
+        """
+        for sprite in self.sprites():
+            sprite.rect.x += x_diff
+            sprite.rect.y += y_diff
+            
         
 class FrameResizable(Frame):
     def __init__(self,
