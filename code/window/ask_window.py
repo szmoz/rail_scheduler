@@ -166,7 +166,9 @@ class AskWindow(Window):
         :param program: Program object
         :return: True: go to next event; False: go to next event manager
         """
-        return self.button_event_manager(event=event, program=)
+        return self.button_event_manager(
+            event=event,
+            program=program)
         
     def draw(self,
              surf: pg.Surface,

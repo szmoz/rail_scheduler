@@ -1,4 +1,4 @@
-from code.util.variable_data import CustomEventTypes as CustomETypes
+from code.util.variable_data import CustomUserEvents as CustomETypes
 
 
 class CustomEventTypes:

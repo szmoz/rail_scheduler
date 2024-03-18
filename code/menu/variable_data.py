@@ -3,9 +3,9 @@ from code.program.types import FileTypes
 
 
 class ButtonFrameEdgeLines:
-    STANDARD = ([1, 2], [2], [2], [2], [2],)
-    PRESSED = ([4], [4], [4], [4], [3, 4],)
-    OVER = ([1, 2], [2], [2], [2], [2],)
+    STANDARD = ([1, 2], [2], [2],)
+    PRESSED = ([4], [4], [3, 4],)
+    OVER = ([1, 2], [2], [2],)
     
     
 inactive_menulist_elements = {
@@ -54,24 +54,14 @@ inactive_menulist_elements = {
         1: (1, 3),
         2: (2, 3),
     },
-    FileTypes.GAME * 10 + FileStates.EMPTY: {
-        0: (3, 4),
-        1: (3, 4, 5),
-        2: (3, ),
-    },
-    FileTypes.GAME * 10 + FileStates.NEW: {
-        0: (3, 4),
-        1: (3, 4),
-        2: (3, ),
-    },
     FileTypes.GAME * 10 + FileStates.MOD: {
         0: (3, 4),
-        1: (3, 4),
+        1: (3, 4, 5),
         2: (),
     },
     FileTypes.GAME * 10 + FileStates.SAVED: {
         0: (3, 4),
-        1: (3, 4),
+        1: (3, 4, 5),
         2: (2, ),
     },
 }

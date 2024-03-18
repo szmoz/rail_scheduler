@@ -31,7 +31,8 @@ class FileWindow(Window):
         :param start_text: file name to appear in textbox at startup
         """
         # Data
-        self.type = win_type
+        self.win_type = win_type
+        self.file_type = file_type
         # Surface content
         # Rect
         self.rect = pg.Rect(
@@ -129,6 +130,13 @@ class FileWindow(Window):
                     program=program,):
                 return True
         return False
+    
+    def is_file_name_exist(self):
+        """
+        Check if textbox text is a name of an existing file in directory
+        :return: True: file is in dir; False: file is not in dir
+        """
+        return True
         
     def draw(self,
              surf: pg.Surface,

@@ -119,6 +119,11 @@ class Program:
         self.map = Map()
         self.simulation = Simulation()
         self.game = Game()
+        self.files = {
+            FileTypes.MAP: self.map,
+            FileTypes.SIM: self.simulation,
+            FileTypes.GAME: self.game
+        }
         
         # Local event management
         self.quit_event_manager = EventManager(

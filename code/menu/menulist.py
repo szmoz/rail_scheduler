@@ -137,13 +137,17 @@ class Menulist:
         list_element_idx = self.element_over
         # Reset menu
         self.element_over = -1
-        program.menu.menubar.close_menu_with_esc(event=pg.event.Event(
-            pg.KEYDOWN,
-            key=pg.K_ESCAPE
-        ), program=program)
-        # Start menu process action
-        program.menu.process.start_new_action(menubar_button_idx=menubar_button_idx, list_element_idx=list_element_idx,
-                                              program=program)
+        program.menu.menubar.close_menu_with_esc(
+            event=pg.event.Event(
+                pg.KEYDOWN,
+                key=pg.K_ESCAPE
+            ),
+            program=program)
+        # Start menu process
+        program.menu.process.start_new_process(
+            menubar_button_idx=menubar_button_idx,
+            list_element_idx=list_element_idx,
+            program=program)
         return True
         
     def isover(self,
