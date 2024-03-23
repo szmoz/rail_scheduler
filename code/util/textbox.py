@@ -119,10 +119,11 @@ class TextBox:
                              pg.KEYDOWN,
                              pg.TEXTINPUT,
                              ),
-                event_functions=(self.isclicked,
-                                 self.highlight_keydown,
-                                 self.highlight_textinput,
-                                 ),
+                event_functions=(
+                    self.isclicked,
+                    self.highlight_keydown,
+                    self.highlight_textinput,
+                ),
             ),
         }
         
