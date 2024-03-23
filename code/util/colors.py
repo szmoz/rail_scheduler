@@ -10,6 +10,7 @@ class Colors:
     DARKER_GRAY = (80, 80, 80)
     BLUE = (0, 0, 255)
     LIGHT_BLUE = (0, 50, 255)
+    LIGHTER_BLUE = (0, 118, 255)
     PINK = (255, 215, 215)
     RED = (255, 0, 0)
     DARK_RED = (25, 0, 0)
