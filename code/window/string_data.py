@@ -32,6 +32,7 @@ class FileStrings:
         Types.SAVE_AS: ("Save", "Cancel"),
         Types.LOAD: ("Load", "Cancel"),
     }
+    TEXTBOX_TYPE = BUTTON_TYPE
     
     
 class ErrorUnopenedFileStrings:

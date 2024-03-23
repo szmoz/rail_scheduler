@@ -1,6 +1,7 @@
 import pygame as pg
 
 from code.util.button import Button
+from code.util.textbox import TextBox
 
 from code.window.color_data import FileColors as Colors
 from code.window.color_data import Colors as WinColors
@@ -20,7 +21,7 @@ class FileWindow(Window):
                  file_type: int,
                  screen_center: tuple,
                  title: str,
-                 start_text: str = '',
+                 start_text: str = None,
                  ) -> None:
         """
         Initialize File window
@@ -56,7 +57,6 @@ class FileWindow(Window):
             title_type=WinStrings.TITLE_TYPE,
         )
         # List ------------------------------------------------------------
-        # Textbox
         # Buttons
         button_left = self.rect.right - self.frame.thickness - int(Sizes.BUTTON_WIDTH * 1.5)
         button_top = self.rect.bottom - self.frame.thickness - (Sizes.BUTTON_HEIGHT * 2)
@@ -107,8 +107,27 @@ class FileWindow(Window):
             background_color_pressed=WinColors.BUTTON_BACKGROUND_PRESSED,
             image_path='resources/graphics/corner_button.png',
         )
+        # Textbox
+        self.textbox = TextBox(
+            rect=pg.Rect(
+                self.topline.rect.left + int(Sizes.BUTTON_WIDTH * 0.25),
+                button_top + int(Sizes.BUTTON_HEIGHT * 1.5),
+                button_left - self.topline.rect.left - int(Sizes.BUTTON_WIDTH * 0.5),
+                Sizes.TEXTBOX_HEIGHT
+            ),
+            frame_thickness=Sizes.TEXTBOX_FRAME_THICKNESS,
+            frame_top_color=Colors.TEXTBOX_FRAME_TOP,
+            frame_bottom_color=Colors.TEXTBOX_FRAME_BOTTOM,
+            frame_edge_lines=(-3, -4),
+            text_size=Sizes.TEXTBOX_TEXT,
+            text_type=Strings.TEXTBOX_TYPE,
+            align="left",
+            start_text=start_text,
+        )
         
+        # Event management
         self.event_managers = (
+            self.textbox.event_manager,
             self.button_event_manager,  # need to add list and textbox event managers
         )
         
@@ -145,6 +164,7 @@ class FileWindow(Window):
         self.draw_basic(surf)
         # List ------------------------------------------------------------
         # Textbox
+        self.textbox.draw(surf)
         return self.rect
         
     def reposition(self,
@@ -158,4 +178,5 @@ class FileWindow(Window):
         x_diff, y_diff = self.reposition_basic(new_screen_center)
         # List ------------------------------------------------------------
         # Textbox
+        self.textbox.reposition(x_diff, y_diff)
         
