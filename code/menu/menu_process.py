@@ -6,6 +6,7 @@ from code.program.states import FileStates, ProgramSates
 from code.program.string_data import Strings as ProgramStrings
 from code.program.types import FileTypes
 
+from code.util.states import TextBoxStates
 from code.util.variable_data import CustomUserEvents
 
 from code.window.ask_window import AskWindow
@@ -1770,6 +1771,9 @@ class MenuProcess:
         print('change_program_file_state_close_process end:', self.step, program.file_type, program.file_state)
         
     def set_process_code(self) -> None:
+        """
+        Set process code: process file type * 100 + process type
+        """
         self.process_code = self.process_file_type * 100 + self.process_type
         
     # Window functions
@@ -1859,6 +1863,11 @@ class MenuProcess:
                   f'{ProgramStrings.FILE_TYPES[file_type]}',
             start_text="",
         )
+        self.window[self.current_win_idx].textbox.state = TextBoxStates.CURSOR
+        self.window[self.current_win_idx].textbox.activate_cursor(
+            program=program,
+            new_cursor_pos=0,
+        )
         print('create_load_window end:', self.step, program.file_type, program.file_state)
         
     def create_new_save_window(self,
@@ -1896,6 +1905,11 @@ class MenuProcess:
                   f'{ProgramStrings.FILE_TYPES[file_type]}',
             start_text="",
         )
+        self.window[self.current_win_idx].textbox.state = TextBoxStates.CURSOR
+        self.window[self.current_win_idx].textbox.activate_cursor(
+            program=program,
+            new_cursor_pos=0,
+        )
         print('create_save_window end:', self.step, program.file_type, program.file_state)
         
     def save_file_create_new_save_window(self,
@@ -1923,9 +1937,9 @@ class MenuProcess:
         print('save_file_create_new_save_window end:', self.step, program.file_type)
         
     def quick_save_file_create_new_save_window(self,
-                                              program,
-                                              file_type: int,
-                                              ) -> None:
+                                               program,
+                                               file_type: int,
+                                               ) -> None:
         """
         Quick save file and create new save window
         :param program: Program object
@@ -1973,6 +1987,17 @@ class MenuProcess:
             title=f'{FileStrings.TITLE_TEXTS[WinTypes.SAVE_AS]} '
                   f'{ProgramStrings.FILE_TYPES[file_type]}',
             start_text="",
+        )
+        start_text = program.files[program.file_type].file_name
+        self.window[self.current_win_idx].textbox.change_text_highlight_all(
+            new_text=start_text,
+            program=program,
+        )
+        self.window[self.current_win_idx].list.update_list(
+            surf=program.screen,
+            new_clicked_idx=self.window[self.current_win_idx].list.find_name(
+                name=start_text,
+            ),
         )
         print('create_save_as_window end:', self.step, program.file_type, program.file_state)
     
@@ -2237,7 +2262,7 @@ class MenuProcess:
         file_idx = self.window[self.current_win_idx].file_type
         if file_idx > FileTypes.GAME:
             file_idx = FileTypes.GAME
-        program.files[file_idx].load(file_name="")  # parameter: textbox.text
+        program.files[file_idx].load(file_name=self.window[self.current_win_idx].textbox.text.text)
         self.change_program_file_state(
             program=program,
             new_file_type=file_idx,
@@ -2309,7 +2334,7 @@ class MenuProcess:
             self.step = next_step
             self.create_ask_overwrite_window(
                 program=program,
-                file_name="X",    # parameter: textbox.text
+                file_name=self.window[self.current_win_idx].textbox.text.text,
                 file_type=self.window[self.current_win_idx].file_type,
             )
             print('save_file end:', self.step, program.file_type, program.file_state)
@@ -2320,7 +2345,11 @@ class MenuProcess:
         file_idx = self.window[win_idx].file_type
         if file_idx > FileTypes.GAME:
             file_idx = FileTypes.GAME
-        program.files[file_idx].save(file_name="")
+        if self.current_win_idx > 0:
+            file_name = self.window[0].textbox.text.text
+        else:
+            file_name = self.window[self.current_win_idx].textbox.text.text
+        program.files[file_idx].save(file_name=file_name)
         self.change_program_file_state(
             program=program,
             new_file_type=file_idx,
@@ -2375,9 +2404,9 @@ class MenuProcess:
         print('save_file_change_program_file_state end:', self.step, program.file_type, program.file_state)
         
     def save_file_load_from_game(self,
-                               program,
-                               next_step: int = None,
-                               ) -> None:
+                                 program,
+                                 next_step: int = None,
+                                 ) -> None:
         """
         Check if given file name exists, if yes: create ask overwrite window. if not: save file and load file from game
         :param program: Program object
@@ -2443,8 +2472,8 @@ class MenuProcess:
         print('quick_save_file_change_program_file_state', self.step, program.file_type, program.file_state)
         
     def quick_save_file_load_from_game(self,
-                                  program,
-                                  ) -> None:
+                                       program,
+                                       ) -> None:
         """
         Quick save opened, actual file and load file from game
         :param program: Program object
