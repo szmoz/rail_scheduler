@@ -9,7 +9,6 @@ from code.menu.states import MenuStates
 from code.menu.string_data import Strings as StringData
 from code.menu.variable_data import ButtonFrameEdgeLines, inactive_menulist_elements
 
-from code.util.colors import Colors as BasicColors
 from code.util.event_manager import EventManager
 
 
@@ -214,6 +213,7 @@ class Menu:
                 self.menubar.rect.width,
                 self.menubar.rect.height + self.menulists[self.list_opened].rect.height
             )
+        # Windows
         if len(self.process.window) > 0:
             for window in self.process.window.values():
                 window.draw(surf)
