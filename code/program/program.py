@@ -313,8 +313,11 @@ class Program:
                 window.reposition(self.screen.get_rect().center)
         # Toolbar
         self.toolbar.change_size(
-            (self.menu.menubar.rect.width,
-             S.TOOLBAR_HEIGHT))
+            new_size=(
+                self.menu.menubar.rect.width,
+                S.TOOLBAR_HEIGHT,
+            ),
+        )
         
     def draw(self):
         self.redraw = False
