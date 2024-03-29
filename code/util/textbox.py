@@ -669,7 +669,8 @@ class TextBox:
         self.background.reposition(x_diff, y_diff)
         self.frame.reposition(x_diff, y_diff)
         self.text.reposition(x_diff, y_diff)
-        
+        self.cursor_rect.x += x_diff
+        self.cursor_rect.y += y_diff
         
         
 class FileWinTextBox(TextBox):
