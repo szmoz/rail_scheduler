@@ -277,7 +277,7 @@ class TextBox:
         Change highlight area when mousemotion
         :param event: pygame event
         :param program: Program object
-        :return: True:go to next event; False:go to next event manager
+        :return: True:go to next event
         """
         char_idx = self.get_mouse_pos_in_text(
             mouse_x=event.pos[0],
@@ -670,3 +670,152 @@ class TextBox:
         self.frame.reposition(x_diff, y_diff)
         self.text.reposition(x_diff, y_diff)
         
+        
+        
+class FileWinTextBox(TextBox):
+    """
+    TextBox for file window
+    """
+
+    def __init__(self,
+                 rect: pg.Rect,
+                 frame_thickness: int,
+                 frame_top_color: tuple,
+                 frame_bottom_color: tuple,
+                 frame_edge_lines: tuple,
+                 text_size: int,
+                 text_type: str,
+                 align: str,
+                 start_text: str = None,
+                 ) -> None:
+        """
+        Initialize file window TextBox object
+        :param rect: rectangle area of object
+        :param frame_thickness: frame thickness
+        :param frame_top_color: frame top&left color
+        :param frame_bottom_color: frame bottom&right volor
+        :param frame_edge_lines: frame edge line codes
+        :param start_text: starting text
+        :param text_size: size of text
+        :param text_type: path to text type (.ttf)
+        :param align: "left" or "right" alignment
+        """
+        super().__init__(
+            rect=rect,
+            frame_thickness=frame_thickness,
+            frame_top_color=frame_top_color,
+            frame_bottom_color=frame_bottom_color,
+            frame_edge_lines=frame_edge_lines,
+            text_size=text_size,
+            text_type=text_type,
+            align=align,
+            start_text=start_text
+        )
+        
+    def event_manager(self,
+                      event: pg.event.Event,
+                      program,
+                      file_win,
+                      ) -> bool:
+        """
+        Event manager for textbox
+        :param event: pygame Event
+        :param program: Program object
+        :param file_win: FileWindow object
+        :return: True: go to next event; False: go to next event manager
+        """
+        old_text = self.text.text
+        event_result = self.event_managers[self.state].handle(
+            event=event,
+            program=program,
+        )
+        if old_text != self.text.text:
+            self.check_file_list(
+                program=program,
+                file_win=file_win,
+            )
+        return event_result
+    
+    def keydown(self,
+                event: pg.event.Event,
+                program,
+                ) -> bool:
+        """
+        Keydown event
+        :param event: pygame event
+        :param program: Program object
+        :return: True:go to next event; False:go to next event manager
+        """
+        key_functs = {
+            pg.K_BACKSPACE: self.backspace,
+            pg.K_DELETE: self.delete,
+            pg.K_LEFT: self.step,
+            pg.K_RIGHT: self.step,
+            pg.K_UP: self.no,
+            pg.K_DOWN: self.no,
+        }
+        try:
+            key_functs[event.key](event=event, program=program)
+            program.draw_rects.append(self.draw_text(program.screen))
+            return True
+        except KeyError:
+            return False
+        
+    def no(self, *args, **kwargs):
+        return
+
+    def check_file_list(self,
+                        program,
+                        file_win,
+                        ) -> None:
+        """
+        Check file list if textbox text is in file names list
+        :param program: Program object
+        :param file_win: FileWindow object
+        """
+        found_idx = file_win.list.find_name(name=self.text.text)
+        if found_idx == file_win.list.clicked_idx:
+            return
+        if found_idx < 0:
+            if file_win.list.clicked_idx >= 0:
+                program.draw_rects.append(file_win.list.update_list(
+                    surf=program.screen,
+                    new_clicked_idx=found_idx,
+                ))
+        else:
+            program.draw_rects.append(file_win.list.update_list(
+                surf=program.screen,
+                new_clicked_idx=found_idx,
+            ))
+    
+    def change_text_highlight_all(self,
+                                  new_text: str,
+                                  program,
+                                  ) -> None:
+        """
+        Change text and highlight all text
+        :param new_text: new text
+        :param program: Program object
+        """
+        self.text.change_text(new_text=new_text)
+        self.update_text(
+            new_text=new_text,
+            surf=program.screen,
+        )
+        self.state = States.HIGHLIGHTED
+        self.highlight_ends[0] = 0
+        self.highlight_ends[1] = len(self.text.text)
+        self.deactivate_cursor(program)
+        
+    def unhighlight(self,
+                    program,
+                    ) -> None:
+        """
+        Remove highlight
+        :param program: Program object
+        """
+        self.state = States.STANDARD
+        self.highlight_ends[0] = -1
+        self.highlight_ends[1] = -1
+        program.draw_rects.append(self.draw_text(program.screen))
+    
