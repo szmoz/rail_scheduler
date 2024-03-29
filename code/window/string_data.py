@@ -33,6 +33,8 @@ class FileStrings:
         Types.LOAD: ("Load", "Cancel"),
     }
     TEXTBOX_TYPE = BUTTON_TYPE
+    LIST_TYPE = TEXTBOX_TYPE
+    LIST_TITLE_TEXTS = ("Name", "Size", "Created", "Modified")
     
     
 class ErrorUnopenedFileStrings:

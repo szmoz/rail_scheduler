@@ -17,7 +17,7 @@ class AskWinSizes:
     
     
 class FileWinSizes:
-    WIDTH = 500
+    WIDTH = 880
     HEIGHT = 480
     BUTTON_WIDTH = 80
     BUTTON_HEIGHT = 24
@@ -26,4 +26,6 @@ class FileWinSizes:
     TEXTBOX_HEIGHT = BUTTON_HEIGHT
     TEXTBOX_FRAME_THICKNESS = 2
     TEXTBOX_TEXT = BUTTON_TEXT
+    LIST_FRAME_THICKNESS = BUTTON_FRAME_THICKNESS
+    LIST_TEXT = 16
     
