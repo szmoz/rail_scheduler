@@ -232,10 +232,11 @@ class TextBox:
         
     def switch_cursor(self,
                       program,
-                      *args, **kwargs) -> None:
+                      *args, **kwargs) -> bool:
         """
         Switch on/off cursor as a blinking function
         :param program: Program object
+        :return: True:go to next event
         """
         if not self.cursor_state:
             self.cursor_state = True
@@ -245,7 +246,7 @@ class TextBox:
                 millis=600,
                 loops=1,
             )
-            return
+            return True
         self.cursor_state = False
         program.draw_rects.append(self.draw_text(program.screen))
         pg.time.set_timer(
@@ -253,6 +254,7 @@ class TextBox:
             millis=600,
             loops=1,
         )
+        return True
 
     def get_mouse_pos_in_text(self,
                               mouse_x: int,
