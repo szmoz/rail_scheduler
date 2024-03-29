@@ -177,6 +177,8 @@ class FileWindow(Window):
         Check if textbox text is a name of an existing file in directory
         :return: True: file is in dir; False: file is not in dir
         """
+        if self.list.find_name(self.textbox.text.text) < 0:
+            return False
         return True
         
     def draw(self,
