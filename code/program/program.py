@@ -129,27 +129,27 @@ class Program:
         # Local event management
         self.quit_event_manager = EventManager(
             event_types=(pg.QUIT, pg.KEYDOWN),
-            event_functions=(self.on_quit, self.on_keydown)
+            event_functions=(self.quit, self.keydown)
         )
-        self.window_resize_event_manager = EventManager(
-            event_types=[pg.VIDEORESIZE],
-            event_functions=[self.on_videoresize]
+        self.window_event_manager = EventManager(
+            event_types=(pg.VIDEORESIZE, pg.WINDOWMOVED),
+            event_functions=(self.video_resize, self.window_moved)
         )
         self.event_managers = {
             ProgramSates.UNOPENED_BASIC: (
-                self.window_resize_event_manager,
+                self.window_event_manager,
                 self.quit_event_manager
             ),
             ProgramSates.OPENED_BASIC: (
-                self.window_resize_event_manager,
+                self.window_event_manager,
                 self.quit_event_manager
             ),
             ProgramSates.OPENED_MENU: (
-                self.window_resize_event_manager,
+                self.window_event_manager,
                 self.quit_event_manager
             ),
             ProgramSates.WINDOW: (
-                self.window_resize_event_manager,
+                self.window_event_manager,
             )
         }
         
@@ -247,7 +247,8 @@ class Program:
                 return True
         return False
         
-    def on_quit(self, *args, **kwargs) -> bool:
+    def quit(self,
+             *args, **kwargs) -> bool:
         """
         Quit program
         :return True: go to next event
@@ -256,17 +257,21 @@ class Program:
         self.break_event_loop = True
         return True
     
-    def on_keydown(self, event, *args, **kwargs) -> bool:
+    def keydown(self,
+                event: pg.event.Event,
+                *args, **kwargs) -> bool:
         """
         Quit program
         :param event: pygame event
-        :return: True: go to next event
+        :return: True: go to next event; False: go to next event handler
         """
         if event.key != pg.K_ESCAPE:
             return False
-        return self.on_quit()
+        return self.quit()
     
-    def on_videoresize(self, event, *args, **kwargs) -> bool:
+    def video_resize(self,
+                     event: pg.event.Event,
+                     *args, **kwargs) -> bool:
         """
         Change window size and break event loop
         :param event: pygame event
@@ -285,6 +290,15 @@ class Program:
         if old_screen_size != self.screen_size:
             self.change_content_size()
         self.break_event_loop = True
+        return True
+    
+    def window_moved(self,
+                     *args, **kwargs) -> bool:
+        """
+        Redraw window when moved
+        :return: True: go to next event
+        """
+        self.redraw = True
         return True
     
     def change_content_size(self):
