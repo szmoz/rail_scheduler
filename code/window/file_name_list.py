@@ -144,6 +144,7 @@ class FileNameList:
                 text.draw(self.list)
                 
         # Title
+        # Text
         self.title = []
         for i in range(len(widths)):
             self.title.append(pg.sprite.Sprite())
@@ -169,6 +170,19 @@ class FileNameList:
             self.title[-1].rect = self.title[-1].image.get_rect()
             self.title[-1].rect.left = self.list_rect.left + rights[i]
             self.title[-1].rect.bottom = self.list_rect.top
+        # Arrow
+        pg.draw.polygon(
+            surface=self.title[0].image,
+            color=C.LIST_TITLE_ARROW,
+            points=(
+                (self.title[0].rect.width - (frame_thickness * 2),
+                 (frame_thickness * 2)),
+                (self.title[0].rect.width - (frame_thickness * 2) - (self.title[0].rect.height - (frame_thickness * 4)),
+                 (frame_thickness * 2)),
+                (self.title[0].rect.width - (frame_thickness * 2) - ((self.title[0].rect.height - (frame_thickness * 4)) // 2),
+                 self.title[0].rect.height - (frame_thickness * 2)),
+            ),
+        )
         
         # Event management
         self.standard_event_manager = EventManager(
@@ -179,6 +193,7 @@ class FileNameList:
         # Dynamic variables
         self.top_el_idx = 0
         self.clicked_idx = -1
+        self.sort = 1
         
     def event_manager(self,
                       event: pg.event.Event,
@@ -219,7 +234,14 @@ class FileNameList:
             return False
         # Check for title click
         if not self.list_rect.collidepoint(event.pos):
-            return False  # Check for title click and sort list
+            for title_idx in range(len(self.title)):
+                if self.title[title_idx].rect.collidepoint(event.pos):
+                    self.sorting(
+                        column_idx=title_idx,
+                        program=program,
+                    )
+                    return True
+            return False
         # List area click
         el_idx = (event.pos[1] - self.list_rect.top) // self.element_height + self.top_el_idx
         # Click in empty element
@@ -322,14 +344,12 @@ class FileNameList:
         Step down by one
         :param program: Program object
         """
-        print(self.clicked_idx)
         if self.clicked_idx == len(self.texts) - 1:
             return
         if self.clicked_idx < 0:
             new_clicked_idx = 1
         else:
             new_clicked_idx = self.clicked_idx + 1
-        print(new_clicked_idx)
         program.draw_rects.append(self.update_list(
             surf=program.screen,
             new_clicked_idx=new_clicked_idx,
@@ -455,6 +475,136 @@ class FileNameList:
         # Redraw
         self.draw_list(surf)
         return self.list_rect
+    
+    def sorting(self,
+                column_idx: int,
+                program,
+                ) -> None:
+        """
+        Sort list according to selected column
+        :param column_idx: column index
+        :param program: Program object
+        """
+        old_sort = self.sort
+        # Set new sort rule
+        new_sort = column_idx + 1
+        if new_sort == self.sort:
+            self.sort *= -1
+        else:
+            self.sort = new_sort
+        # Clear previous arrow
+        pg.draw.rect(
+            surface=self.title[abs(old_sort) - 1].image,
+            color=C.LIST_TITLE_BACKGROUND,
+            rect=pg.Rect(
+                self.title[abs(old_sort) - 1].rect.width - self.title[abs(old_sort) - 1].rect.height,
+                0,
+                self.title[abs(old_sort) - 1].rect.height,
+                self.title[abs(old_sort) - 1].rect.height
+            ),
+        )
+        if abs(old_sort) != new_sort:
+            program.screen.blit(
+                self.title[abs(old_sort) - 1].image,
+                self.title[abs(old_sort) - 1].rect,
+            )
+            program.draw_rects.append(self.title[abs(old_sort) - 1].rect)
+        # Draw new arrow
+        if self.sort > 0:
+            arrow_points = (
+                (self.title[column_idx].rect.width - (self.frame.thickness * 2),
+                 self.frame.thickness * 2),
+                (self.title[column_idx].rect.width - (self.frame.thickness * 2) -
+                 (self.title[column_idx].rect.height - (self.frame.thickness * 4)),
+                 self.frame.thickness * 2),
+                (self.title[column_idx].rect.width - (self.frame.thickness * 2) -
+                 ((self.title[column_idx].rect.height - (self.frame.thickness * 4)) // 2),
+                 self.title[column_idx].rect.height - (self.frame.thickness * 2)),
+            )
+        else:
+            arrow_points = (
+                (self.title[column_idx].rect.width - (self.frame.thickness * 2),
+                 self.title[column_idx].rect.height - (self.frame.thickness * 2)),
+                (self.title[column_idx].rect.width - (self.frame.thickness * 2) -
+                 (self.title[column_idx].rect.height - (self.frame.thickness * 4)),
+                 self.title[column_idx].rect.height - (self.frame.thickness * 2)),
+                (self.title[column_idx].rect.width - (self.frame.thickness * 2) -
+                 ((self.title[column_idx].rect.height - (self.frame.thickness * 4)) // 2),
+                 self.frame.thickness * 2),
+            )
+        pg.draw.polygon(
+            surface=self.title[column_idx].image,
+            color=C.LIST_TITLE_ARROW,
+            points=arrow_points,
+        )
+        program.screen.blit(
+            self.title[column_idx].image,
+            self.title[column_idx].rect,
+        )
+        program.draw_rects.append(self.title[column_idx].rect)
+        if self.clicked_idx >= 0:
+            clicked_name = self.texts[self.clicked_idx][0]
+        # Sort data
+        def sort_ascending():
+            for i in range(len(self.texts) - 1, 0, -1):
+                for j in range(0, i):
+                    if self.texts[j + 1][column_idx].text < self.texts[j][column_idx].text:
+                        temp = self.texts[j]
+                        self.texts[j] = self.texts[j + 1]
+                        self.texts[j + 1] = temp
+                        for t in self.texts[j]:
+                            t.rect.y -= self.element_height
+                        for t in self.texts[j + 1]:
+                            t.rect.y += self.element_height
+        
+        def sort_descending():
+            for i in range(len(self.texts) - 1, 0, -1):
+                for j in range(len(self.texts) - 1, len(self.texts) - i - 1, -1):
+                    if self.texts[j - 1][column_idx].text < self.texts[j][column_idx].text:
+                        temp = self.texts[j]
+                        self.texts[j] = self.texts[j - 1]
+                        self.texts[j - 1] = temp
+                        for t in self.texts[j]:
+                            t.rect.y += self.element_height
+                        for t in self.texts[j - 1]:
+                            t.rect.y -= self.element_height
+        
+        if self.sort < 0:
+            sort_descending()
+        else:
+            sort_ascending()
+        
+        # Draw list
+        # Background
+        self.list.fill(C.LIST_BACKGROUND)
+        # Clicked element
+        if self.clicked_idx >= 0:
+            for i in range(len(self.texts)):
+                if self.texts[i][0] == clicked_name:
+                    print(i)
+                    self.clicked_idx = i
+                    break
+            pg.draw.rect(
+                surface=self.list,
+                color=C.LIST_BACKGROUND_CLICKED,
+                rect=pg.Rect(
+                    0,
+                    self.clicked_idx * self.element_height,
+                    self.list_rect.width,
+                    self.element_height,
+                ),
+            )
+            if self.clicked_idx < self.top_el_idx:
+                self.top_el_idx = self.clicked_idx
+            elif self.clicked_idx > self.top_el_idx + self.n_visible - 1:
+                self.top_el_idx = self.clicked_idx - self.n_visible + 1
+                if self.top_el_idx > len(self.texts) - self.n_visible:
+                    self.top_el_idx = len(self.texts) - self.n_visible
+        # Texts
+        for line in self.texts:
+            for text in line:
+                text.draw(self.list)
+        program.draw_rects.append(self.draw_list(program.screen))
     
     def reposition(self,
                    x_diff: int = 0,
