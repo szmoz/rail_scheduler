@@ -581,7 +581,6 @@ class FileNameList:
         if self.clicked_idx >= 0:
             for i in range(len(self.texts)):
                 if self.texts[i][0] == clicked_name:
-                    print(i)
                     self.clicked_idx = i
                     break
             pg.draw.rect(
