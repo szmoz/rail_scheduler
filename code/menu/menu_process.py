@@ -1989,6 +1989,8 @@ class MenuProcess:
             start_text="",
         )
         start_text = program.files[program.file_type].file_name
+        if start_text is None:
+            start_text = ""
         self.window[self.current_win_idx].textbox.change_text_highlight_all(
             new_text=start_text,
             program=program,
@@ -2015,6 +2017,8 @@ class MenuProcess:
         print('create_ask_save_window', self.step, program.file_type, program.file_state, file_type, file_name)
         if file_name is None:
             file_name = program.files[file_type].file_name
+            if file_name is None:
+                file_name = "the"
         elif file_name == "":
             file_name = "the"
         self.current_win_idx += 1
@@ -2083,6 +2087,8 @@ class MenuProcess:
         print('create_ask_exit_window', self.step, program.file_type, program.file_state, file_type, file_name)
         if file_name is None:
             file_name = program.files[file_type].file_name
+            if file_name is None:
+                file_name = "the"
         self.current_win_idx += 1
         self.window[self.current_win_idx] = AskWindow(
             win_type=WinTypes.ASK_EXIT,
@@ -2167,8 +2173,12 @@ class MenuProcess:
         :param new_file_state: new file state
         """
         print('change_program_file_state', self.step, program.file_type, program.file_state, new_file_type, new_file_state)
-        if new_file_type is not None:
+        if new_file_type is not None and program.file_type != new_file_type:
             program.file_type = new_file_type
+            program.files[program.file_type].set_file_name(
+                program=program,
+                new_file_name=program.files[program.file_type].file_name,
+            )
         if new_file_state is not None:
             program.file_state = new_file_state
         program.isopened = ProgramSates.OPENED_BASIC
@@ -2224,7 +2234,7 @@ class MenuProcess:
         :param program: Program object
         """
         print('create_empty', self.step, program.file_type, program.file_state)
-        program.files[self.process_file_type].create_empty()
+        program.files[self.process_file_type].create_empty(program=program)
         self.change_program_file_state(
             program=program,
             new_file_type=self.process_file_type,
@@ -2262,7 +2272,10 @@ class MenuProcess:
         file_idx = self.window[self.current_win_idx].file_type
         if file_idx > FileTypes.GAME:
             file_idx = FileTypes.GAME
-        program.files[file_idx].load(file_name=self.window[self.current_win_idx].textbox.text.text)
+        program.files[file_idx].load(
+            program=program,
+            file_name=self.window[self.current_win_idx].textbox.text.text,
+        )
         self.change_program_file_state(
             program=program,
             new_file_type=file_idx,
@@ -2349,7 +2362,10 @@ class MenuProcess:
             file_name = self.window[0].textbox.text.text
         else:
             file_name = self.window[self.current_win_idx].textbox.text.text
-        program.files[file_idx].save(file_name=file_name)
+        program.files[file_idx].save(
+            program=program,
+            file_name=file_name
+        )
         self.change_program_file_state(
             program=program,
             new_file_type=file_idx,
@@ -2429,7 +2445,7 @@ class MenuProcess:
         :param close: True: close process
         """
         print('quick_save_file', self.step, program.file_type, program.file_state, close)
-        program.files[program.file_type].save()
+        program.files[program.file_type].save(program=program)
         self.change_program_file_state(
             program=program,
             new_file_state=FileStates.SAVED,

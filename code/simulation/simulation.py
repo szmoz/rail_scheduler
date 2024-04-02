@@ -3,26 +3,42 @@ from code.program.states import FileStates
 
 class Simulation:
     def __init__(self):
-        self.file_name = ""
+        self.file_name = None
         self.state = FileStates.NO
 
     def load(self,
+             program,
              file_name: str,
              ) -> None:
-        self.file_name = file_name
+        self.set_file_name(
+            program=program,
+            new_file_name=file_name,
+        )
         self.state = FileStates.SAVED
 
     def save(self,
+             program,
              file_name: str = None,
              ) -> None:
         if file_name is not None:
-            self.file_name = file_name
+            self.set_file_name(
+                program=program,
+                new_file_name=file_name,
+            )
         self.state = FileStates.SAVED
         
     def delete_progress(self):
         self.state = FileStates.SAVED
 
-    def create_empty(self):
-        self.file_name = ""
+    def create_empty(self, program):
+        self.set_file_name(program=program)
         self.state = FileStates.EMPTY
-    
+
+    def set_file_name(self,
+                      program,
+                      new_file_name: str = None,
+                      ) -> None:
+        self.file_name = new_file_name
+        program.caption[2] = self.file_name
+        program.set_caption()
+        

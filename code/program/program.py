@@ -58,8 +58,8 @@ class Program:
         self.clock = pg.time.Clock()
         pg.key.set_repeat(v.FRAME_LENGTH * 4, v.FRAME_LENGTH)
         # Caption
-        self.caption = ProgramStrings.CAPTION
-        pg.display.set_caption(self.caption)
+        self.caption = [ProgramStrings.CAPTION, None, None]
+        self.set_caption()
         
         # Surface content
         # Frame
@@ -357,3 +357,14 @@ class Program:
         :return: file_type * 10 + file_state
         """
         return self.file_type * 10 + self.file_state
+
+    def set_caption(self):
+        """
+        Set caption
+        """
+        new_caption = self.caption[0]
+        for i in range(1, len(self.caption), 1):
+            if self.caption[i] is not None:
+                new_caption += f" - {self.caption[i]}"
+        pg.display.set_caption(new_caption)
+        
