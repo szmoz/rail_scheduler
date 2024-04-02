@@ -128,12 +128,22 @@ class Program:
         
         # Local event management
         self.quit_event_manager = EventManager(
-            event_types=(pg.QUIT, pg.KEYDOWN),
-            event_functions=(self.quit, self.keydown)
+            event_types=(
+                pg.QUIT,
+                pg.KEYDOWN),
+            event_functions=(
+                self.quit,
+                self.keydown)
         )
         self.window_event_manager = EventManager(
-            event_types=(pg.VIDEORESIZE, pg.WINDOWMOVED),
-            event_functions=(self.video_resize, self.window_moved)
+            event_types=(
+                pg.VIDEORESIZE,
+                pg.WINDOWMOVED,
+                pg.WINDOWRESTORED),
+            event_functions=(
+                self.video_resize,
+                self.window_moved,
+                self.window_restored)
         )
         self.event_managers = {
             ProgramSates.UNOPENED_BASIC: (
@@ -299,6 +309,14 @@ class Program:
         :return: True: go to next event
         """
         self.redraw = True
+        return True
+    
+    def window_restored(self, *args, **kwargs) -> bool:
+        """
+        Enable regular safety redraw events
+        :return: True: go to next event
+        """
+        self.draw()
         return True
     
     def change_content_size(self):
