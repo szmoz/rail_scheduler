@@ -119,3 +119,6 @@ class Text(pg.sprite.Sprite):
             self.anchor_pos[1] + y_diff
         )
         
+    def __repr__(self):
+        return self.text
+        
