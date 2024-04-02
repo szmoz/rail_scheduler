@@ -30,17 +30,21 @@ class Toolbar:
         
         # Event management
         self.event_managers = {
+            ToolbarStates.CLOSED: EventManager(
+                event_types=(),
+                event_functions=(),
+            ),
             ToolbarStates.MAP: EventManager(
-                event_types=(None,),
-                event_functions=(None,)
+                event_types=(),
+                event_functions=(),
             ),
             ToolbarStates.SCHEDULE: EventManager(
-                event_types=(None,),
-                event_functions=(None,)
+                event_types=(),
+                event_functions=(),
             ),
             ToolbarStates.SIMULATION: EventManager(
-                event_types=(None,),
-                event_functions=(None,)
+                event_types=(),
+                event_functions=(),
             )
         }
         
@@ -57,7 +61,7 @@ class Toolbar:
         :param program: Program object
         :return: True: go to next event; False: go to next event manager
         """
-        return self.event_managers[self.state].handle(event=event)
+        return self.event_managers[self.state].handle(event=event, program=program)
     
     def draw(self,
              surf: pg.Surface
