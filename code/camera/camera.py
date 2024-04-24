@@ -4,11 +4,10 @@ from code.camera.camera_view import CameraView
 from code.camera.color_data import Colors as C
 from code.camera.size_data import Sizes as S
 
-from code.util.background import BackgroundResizable
 from code.util.frame import FrameResizable
 
 
-class Camera(pg.sprite.Sprite):
+class Camera:
     """
     Workspace area with frame
     Functions as a camera over the map
@@ -19,8 +18,6 @@ class Camera(pg.sprite.Sprite):
         Initialize Camera object
         :param rect: rectangle area on surface
         """
-        super().__init__()
-        self.image = pg.Surface(rect.size)
         self.rect = rect
         
         # Main surface content
@@ -31,24 +28,15 @@ class Camera(pg.sprite.Sprite):
             top_color=C.FRAME_TOP,
             bottom_color=C.FRAME_BOTTOM,
         )
-        # Camera views
-        # Empty camera view -- when camera does not show anything
-        self.empty_camera_view = BackgroundResizable(
+        # Camera view
+        self.view = CameraView(
             rect=pg.Rect(
                 self.rect.left + S.FRAME_THICKNESS,
                 self.rect.top + S.FRAME_THICKNESS,
                 self.rect.width - (S.FRAME_THICKNESS * 2),
                 self.rect.height - (S.FRAME_THICKNESS * 2)
             ),
-            color=C.BACKGROUND,
         )
-        # Camera view
-        self.map_camera_view = CameraView(rect=self.empty_camera_view.rect)
-        self.camera_views = (self.empty_camera_view, self.map_camera_view)
-        self.map_surfs = (None, None)  # NEED TO CHANGE [1]--------------------------
-        
-        # Dynamic variables
-        self.active_camera_view_idx = 0
         
     def draw(self,
              surf: pg.Surface,
@@ -60,10 +48,8 @@ class Camera(pg.sprite.Sprite):
         """
         # Frame
         self.frame.draw(surf)
-        # Camera screen
-        self.camera_views[self.active_camera_view_idx].draw(
-            surf=surf,
-            map_surf=self.map_surfs[self.active_camera_view_idx])
+        # View
+        self.view.draw(surf)
         return self.rect
         
     def change_size(self,
@@ -77,13 +63,13 @@ class Camera(pg.sprite.Sprite):
             self.rect.topleft,
             new_size
         )
-        # Surface
-        self.image = pg.Surface(self.rect.size)
         # Frame
         self.frame.change_size(new_size)
-        # Empty camera view
-        self.empty_camera_view.change_size(
-            (new_size[0] - (S.FRAME_THICKNESS * 2),
-             new_size[1] - (S.FRAME_THICKNESS * 2))
+        # View
+        self.view.change_size(
+            new_size=(
+                new_size[0] - (self.frame.thickness * 2),
+                new_size[1] - (self.frame.thickness * 2),
+            ),
         )
         

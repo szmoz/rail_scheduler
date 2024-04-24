@@ -170,6 +170,7 @@ class Program:
                 self.event_manager,
             ),
             ProgramSates.OPENED_BASIC: (
+                self.camera.view.event_manager,
                 self.toolbar.event_manager,
                 self.menu.event_manager,
                 self.event_manager,
