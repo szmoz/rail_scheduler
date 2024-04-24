@@ -98,11 +98,11 @@ class Menu:
         :return: True: go to next event; False: go to next event manager
         """
         for manager_idx in range(len(self.event_managers[self.state])):
-            if program.break_event_loop:
-                return True
             if self.event_managers[self.state][manager_idx](
                     event=event,
                     program=program,):
+                return True
+            if program.break_event_loop:
                 return True
         return False
         
