@@ -2179,6 +2179,7 @@ class MenuProcess:
                 program=program,
                 new_file_name=program.files[program.file_type].file_name,
             )
+            program.camera.view.change_file_type(new_file_type=new_file_type)
         if new_file_state is not None:
             program.file_state = new_file_state
         program.isopened = ProgramSates.OPENED_BASIC
@@ -2340,7 +2341,7 @@ class MenuProcess:
         :param program: Program object
         :param next_step: next step if need to overwrite; if None: no file name precheck
         :param close: True: close process; False: do not close process
-        :return True: file name existing; False: file name not existing
+        :return True: file name not existing; False: file name existing, overwrite ask window needed
         """
         print('save_file', self.step, program.file_type, program.file_state, next_step, close)
         if next_step is not None and self.window[self.current_win_idx].is_file_name_exist():
@@ -2406,10 +2407,7 @@ class MenuProcess:
         :param new_file_state: new file state
         """
         print('save_file_change_program_file_state', self.step, program.file_type, program.file_state, next_step, new_file_type, new_file_state)
-        close = False
-        if next_step is None:
-            close = True
-        if not self.save_file(program=program, next_step=next_step, close=close):
+        if not self.save_file(program=program, next_step=next_step, close=False):
             print('save_file_change_program_file_state end:', self.step, program.file_type, program.file_state)
             return
         self.change_program_file_state(
@@ -2417,6 +2415,7 @@ class MenuProcess:
             new_file_type=new_file_type,
             new_file_state=new_file_state,
         )
+        self.close_process(program=program)
         print('save_file_change_program_file_state end:', self.step, program.file_type, program.file_state)
         
     def save_file_load_from_game(self,
