@@ -2,6 +2,8 @@ from datetime import datetime
 import os
 import pygame as pg
 
+from code.program.string_data import Strings as ProgramStrings
+
 from code.util.event_manager import EventManager
 from code.util.frame import Frame
 from code.util.text import Text
@@ -41,8 +43,15 @@ class FileNameList:
         self.extension = FILE_EXTENSIONS[file_type]
         files = []
         for file in os.listdir(f"{self.dir_path}/"):
+            # Check extension
             if not file.endswith(self.extension):
                 continue
+            # Check rail scheduler password
+            with open(f"{self.dir_path}/" + file, "rb") as f:
+                password = ProgramStrings.FILE_PASSWORDS[file_type]
+                read_password = f.read(len(password))
+                if str(password) != str(read_password):
+                    continue
             size = os.path.getsize(f"{self.dir_path}/{file}") // 1024
             create_time = os.path.getctime(f"{self.dir_path}/{file}")
             mod_time = os.path.getmtime(f"{self.dir_path}/{file}")
