@@ -378,10 +378,17 @@ class Program:
         """
         return self.file_type * 10 + self.file_state
 
-    def set_caption(self):
+    def set_caption(self,
+                    caption_1: str = None,
+                    caption_2: str = None,
+                    ) -> None:
         """
         Set caption
+        :param caption_1: First part of caption. Name of map or game file
+        :param caption_2: Second part of caption. Name of simulation file
         """
+        self.caption[1] = caption_1
+        self.caption[2] = caption_2
         new_caption = self.caption[0]
         for i in range(1, len(self.caption), 1):
             if self.caption[i] is not None:

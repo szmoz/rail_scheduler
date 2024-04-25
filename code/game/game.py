@@ -45,7 +45,7 @@ class Game:
                       new_file_name: str = None,
                       ) -> None:
         self.file_name = new_file_name
-        program.caption[1] = self.file_name
-        program.caption[2] = None
-        program.set_caption()
+        program.set_caption(
+            caption_1=self.file_name,
+        )
         

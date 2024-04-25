@@ -39,6 +39,8 @@ class Simulation:
                       new_file_name: str = None,
                       ) -> None:
         self.file_name = new_file_name
-        program.caption[2] = self.file_name
-        program.set_caption()
+        program.set_caption(
+            caption_1=program.caption[1],
+            caption_2=self.file_name,
+        )
         
