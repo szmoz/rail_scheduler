@@ -60,6 +60,16 @@ class Program:
         # Caption
         self.caption = [ProgramStrings.CAPTION, None, None]
         self.set_caption()
+
+        # Files
+        self.map = Map()
+        self.simulation = Simulation()
+        self.game = Game()
+        self.files = {
+            FileTypes.MAP: self.map,
+            FileTypes.SIM: self.simulation,
+            FileTypes.GAME: self.game
+        }
         
         # Surface content
         # Frame
@@ -103,7 +113,7 @@ class Program:
                 self.menu.menubar.rect.bottom,
                 self.menu.menubar.rect.width,
                 S.TOOLBAR_HEIGHT
-            )
+            ),
         )
         # Camera
         self.camera = Camera(
@@ -114,17 +124,8 @@ class Program:
                 self.screen_height - (S.FRAME_THICKNESS * 2) -
                 S.MENUBAR_HEIGHT - S.TOOLBAR_HEIGHT - (S.TOOLBAR_CAMERA_GAP * 2)
             ),
+            map_obj=self.map,
         )
-        
-        # Files
-        self.map = Map()
-        self.simulation = Simulation()
-        self.game = Game()
-        self.files = {
-            FileTypes.MAP: self.map,
-            FileTypes.SIM: self.simulation,
-            FileTypes.GAME: self.game
-        }
         
         # Local event management
         self.quit_event_manager = EventManager(
