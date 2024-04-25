@@ -13,10 +13,13 @@ class Camera:
     Functions as a camera over the map
     """
     def __init__(self,
-                 rect: pg.Rect) -> None:
+                 rect: pg.Rect,
+                 map_obj,
+                 ) -> None:
         """
         Initialize Camera object
         :param rect: rectangle area on surface
+        :param map_obj: program.map
         """
         self.rect = rect
         
@@ -36,6 +39,7 @@ class Camera:
                 self.rect.width - (S.FRAME_THICKNESS * 2),
                 self.rect.height - (S.FRAME_THICKNESS * 2)
             ),
+            map_obj=map_obj,
         )
         
     def draw(self,
