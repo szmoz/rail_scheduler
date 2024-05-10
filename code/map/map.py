@@ -71,11 +71,12 @@ class Map:
         with open("Files/Maps/" + self.file_name + ".rmap", "wb") as f:
             password = Strings.FILE_PASSWORDS[FileTypes.MAP]
             f.write(password)
-            for coord, tile_data in self.data.items():
-                f.write(coord[0].to_bytes(2, byteorder="big", signed=True))
-                f.write(coord[1].to_bytes(2, byteorder="big", signed=True))
-                for data in tile_data:
-                    f.write(int(data).to_bytes(1, byteorder="big", signed=False))
+            for coord_x in self.data.keys():
+                for coord_y, tile_data in self.data[coord_x].items():
+                    f.write(coord_x.to_bytes(2, byteorder="big", signed=True))
+                    f.write(coord_y.to_bytes(2, byteorder="big", signed=True))
+                    for data in tile_data:
+                        f.write(int(data).to_bytes(1, byteorder="big", signed=False))
     
     # File handling functions
     def load(self,
