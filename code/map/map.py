@@ -15,12 +15,13 @@ class Map:
         """
         # Data
         self.data = {}
-        self.data[(4, -120)] = np.zeros(5, dtype=np.uint8)
-        self.data[(4, -120)][0] = 0b00101011
-        self.data[(4, -120)][1] = 38
-        self.data[(4, -120)][2] = 23
-        self.data[(4, -120)][3] = 67
-        self.data[(4, -120)][4] = 9
+        self.data[4] = {}
+        self.data[4][-120] = np.zeros(5, dtype=np.uint8)
+        self.data[4][-120][0] = 0b00101011
+        self.data[4][-120][1] = 38
+        self.data[4][-120][2] = 23
+        self.data[4][-120][3] = 67
+        self.data[4][-120][4] = 9
         print(self.data)
         
         # File variables
@@ -40,7 +41,7 @@ class Map:
                 coord_x = int.from_bytes(f.read(2), byteorder="big", signed=True)
                 coord_y = int.from_bytes(f.read(2), byteorder="big", signed=True)
                 # Check for end of file
-                if 0 == coord_x == coord_y and (coord_x, coord_y) in self.data.keys():
+                if 0 == coord_x == coord_y and coord_x in self.data.keys() and coord_y in self.data[0].keys():
                     break
                 # Get selector and set length of tile data
                 selector = int.from_bytes(f.read(1), byteorder="big", signed=False)
@@ -53,10 +54,15 @@ class Map:
                 data_arr[0] = selector
                 for i in range(1, count + 1, 1):
                     data_arr[i] = int.from_bytes(f.read(1), byteorder="big", signed=False)
-                self.data[(coord_x, coord_y)] = data_arr
+                try:
+                    self.data[coord_x][coord_y] = data_arr
+                except KeyError:
+                    self.data[coord_x] = {coord_y: data_arr}
         # Check for empty origo tile
-        if (0, 0) in self.data.keys() and len(self.data[(0, 0)]) == 1:
-            self.data.pop((0, 0))
+        if 0 in self.data.keys() and 0 in self.data[0].keys() and len(self.data[0][0]) == 1:
+            self.data[0].pop(0)
+            if len(self.data[0]) == 0:
+                self.data.pop(0)
             
     def save_data(self):
         """
