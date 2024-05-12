@@ -26,3 +26,62 @@ rail_types = ("straight", "diag", "turn", "diagturn", "bend", "diagbend", "diag_
 for i in range(len(rail_types)):
     create_img(rail_types[i])
     
+# Set rail pixel lines
+from code.camera.variable_data import RAIL_PIXELS as rp
+
+# 90
+new_coord = []
+for px in rp[7]:
+    new_coord.append((px[0], 10 + (10 - px[1])))
+    
+rotated_new_coord = []
+for px in new_coord:
+    rotated_new_coord.append([px[1] * -1, px[0]])
+
+for px in rotated_new_coord:
+    px[0] += 20
+
+for px in rotated_new_coord:
+    print(f"        ({px[0]}, {10 + (10 - px[1])}),")
+
+# 180
+new_coord = []
+for px in rp[2]:
+    new_coord.append((px[0], 10 + (10 - px[1])))
+
+rotated_new_coord = []
+for px in new_coord:
+    rotated_new_coord.append([px[0] * -1, px[1] * -1])
+
+for px in rotated_new_coord:
+    px[0] += 20
+    px[1] += 20
+
+for px in rotated_new_coord:
+    print(f"        ({px[0]}, {10 + (10 - px[1])}),")
+
+# 270
+new_coord = []
+for px in rp[2]:
+    new_coord.append((px[0], 10 + (10 - px[1])))
+    
+rotated_new_coord = []
+for px in new_coord:
+    rotated_new_coord.append([px[1], px[0] * -1])
+    
+for px in rotated_new_coord:
+    px[1] += 20
+    
+for px in rotated_new_coord:
+    print(f"        ({px[0]}, {10 + (10 - px[1])}),")
+
+    
+print("")
+# reverse
+new_rp = []
+for px in rp[2]:
+    new_rp.append(px)
+new_rp = new_rp.__reversed__()
+for px in new_rp:
+    print(f"        ({px[0]}, {px[1]}),")
+
