@@ -1,4 +1,3 @@
-import pygame
 import pygame as pg
 import sys
 
@@ -48,7 +47,7 @@ class Program:
         self.icon = pg.image.load("resources/graphics/icon.png")
         pg.display.set_icon(pg.image.load("resources/graphics/icon.png"))
         # Initialize pygame
-        pygame.init()
+        pg.init()
         # Display surface
         self.screen = pg.display.set_mode(
             size=self.screen_size,
