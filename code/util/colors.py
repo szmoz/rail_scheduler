@@ -15,7 +15,10 @@ class Colors:
     RED = (255, 0, 0)
     DARK_RED = (25, 0, 0)
     GREEN = (0, 128, 0)
+    LIGHT_GREEN = (128, 255, 128)
     PURPLE = (128, 0, 128)
     BROWN = (128, 64, 0)
     CYAN = (255, 0, 255)
+    YELLOW = (255, 255, 0)
+    LIGHT_YELLOW = (255, 255, 128)
     
