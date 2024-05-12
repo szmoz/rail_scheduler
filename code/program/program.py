@@ -221,7 +221,7 @@ class Program:
                 pg.display.update(self.draw_rects)
             self.draw_rects.clear()
             # Wait for next frame
-            self.clock.tick(framerate=self.framerate)
+            self.clock.tick(self.framerate)
         
         # Shutting down program
         print(f"Number of draws: {self.draw_count}")  # Testing
