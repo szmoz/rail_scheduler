@@ -31,8 +31,9 @@ def create_platform():
     for y in range(size[1]):
         for x in range(size[0]):
             px = img.get_at((x, y))
-            if px[:3] == (0, 0, 0):
-                new_img.set_at((x, y), (255, 128, 0))
+            print(px)
+            if px[:3] == (224, 128, 0):
+                new_img.set_at((x, y), (224, 128, 0))
     pg.image.save(
         new_img,
         f"C:/Users/M/PycharmProjects/rail_scheduler_v2/resources/graphics/platform.BMP"
