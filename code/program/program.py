@@ -55,7 +55,7 @@ class Program:
         )
         # Clock
         self.clock = pg.time.Clock()
-        pg.key.set_repeat(v.FRAME_LENGTH * 4, v.FRAME_LENGTH)
+        pg.key.set_repeat(v.FRAMERATE * 4, v.FRAMERATE)
         # Caption
         self.caption = [ProgramStrings.CAPTION, None, None]
         self.set_caption()
