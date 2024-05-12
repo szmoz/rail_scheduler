@@ -1,2 +1,2 @@
 # Pygame variables
-FRAME_LENGTH = 60  # milliseconds
+FRAMERATE = 60  # /s
