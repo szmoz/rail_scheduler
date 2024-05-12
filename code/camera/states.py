@@ -7,10 +7,11 @@ class CameraStates:
 
 class MapStates:
     STANDARD = 0
-    BUILD_RAIL = 1
-    BUILD_PLATFORM = 2
-    BUILD_SIGNAL = 3
-    BUILD_FENCE = 4
-    SET_TERRAIN = 10
-    SET_STATION = 11
+    MOVE = 1
+    BUILD_RAIL = 11
+    BUILD_PLATFORM = 12
+    BUILD_SIGNAL = 13
+    BUILD_FENCE = 14
+    SET_TERRAIN = 20
+    SET_STATION = 21
     

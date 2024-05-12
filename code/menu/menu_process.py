@@ -2282,6 +2282,7 @@ class MenuProcess:
             new_file_type=file_idx,
             new_file_state=FileStates.SAVED,
         )
+        program.camera.view.load_data()
         if close:
             self.close_process(program)
         print('load_file end:', self.step, program.file_type, program.file_state)
