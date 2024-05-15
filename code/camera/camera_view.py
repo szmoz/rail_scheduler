@@ -36,7 +36,7 @@ class CameraView:
                         pg.MOUSEWHEEL,
                     ),
                     event_functions=(
-                        self.start_moving_map,
+                        self.standard_mousebuttondown,
                         self.standard_keydown,
                         self.standard_mousemotion,
                         self.standard_mousewheel,
@@ -144,6 +144,7 @@ class CameraView:
         # Dynamic variables
         self.file_type = FileTypes.NO
         self.state = MapStates.STANDARD
+        self.pressed_tile = None
         self.map_pos_rect = pg.Rect(
             0,
             0,
@@ -189,11 +190,11 @@ class CameraView:
         except KeyError:
             return False
 
-    def start_moving_map(self,
-                         event: pg.event.Event,
-                         *args, **kwargs) -> bool:
+    def standard_mousebuttondown(self,
+                                 event: pg.event.Event,
+                                 *args, **kwargs) -> bool:
         """
-        Start moving map with left mousebuttondown
+        Event handler for mousebuttondown event in standard state
         :param event: pygame event
         :return: True: go to next event; False: go to next event handler
         """
@@ -203,6 +204,8 @@ class CameraView:
         # Check camera area
         if not self.rect.collidepoint(event.pos):
             return False
+        # Set pressed tile
+        self.pressed_tile = self.get_tile_coordinate(event.pos)
         # Start moving map
         self.state = MapStates.MOVE
         # Clear zoom center position
@@ -392,10 +395,17 @@ class CameraView:
         """
         if not self.rect.collidepoint(event.pos):
             return False
-        # Get tile coordinate
-        tile_x = ((event.pos[0] - self.rect.x) * self.px_ratio + self.map_pos_rect.x) // self.tile_size
-        tile_y = ((event.pos[1] - self.rect.y) * self.px_ratio + self.map_pos_rect.y) // self.tile_size
         return True
+    
+    def get_tile_coordinate(self, pos: tuple) -> tuple:
+        """
+        Get tile coordinate at given mouse position
+        :param pos: position of mouse
+        :return: tile coordinates (x, y)
+        """
+        tile_x = int(((pos[0] - self.rect.x) * self.px_ratio + self.map_pos_rect.x) // self.tile_size)
+        tile_y = int(((pos[1] - self.rect.y) * self.px_ratio + self.map_pos_rect.y) // self.tile_size)
+        return tile_x, tile_y
     
     def standard_mousewheel(self,
                             event: pg.event.Event,
