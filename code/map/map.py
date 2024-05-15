@@ -126,6 +126,7 @@ class Map:
         self.set_file_name(
             program=program,
         )
+        self.data.clear()
         self.file_state = FileStates.EMPTY
         
     def set_file_name(self,
