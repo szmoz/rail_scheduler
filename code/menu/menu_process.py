@@ -2236,6 +2236,7 @@ class MenuProcess:
         """
         print('create_empty', self.step, program.file_type, program.file_state)
         program.files[self.process_file_type].create_empty(program=program)
+        program.camera.view.set_default(new_file_type=self.process_file_type)
         self.change_program_file_state(
             program=program,
             new_file_type=self.process_file_type,

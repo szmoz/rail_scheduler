@@ -444,8 +444,34 @@ class CameraView:
             if max_y > self.y_range[1]:
                 self.y_range[1] = max_y
         self.y_range[0] *= self.tile_size
+        self.y_range[0] += self.tile_size
         self.y_range[1] *= self.tile_size
-        self.y_range[0] -= self.rect.height - self.tile_size
+        
+    def set_default(self, new_file_type: int):
+        """
+        Clear all graphic data and set dynamic variables to default
+        """
+        self.change_file_type(new_file_type=new_file_type)
+        self.surfs.clear()
+        self.state = MapStates.STANDARD
+        self.map_pos_rect = pg.Rect(
+            0,
+            0,
+            self.rect.width,
+            self.rect.height)
+        self.loading_thickness = self.surf_size
+        self.change_loading_rect_size()
+        self.temp_surf = pg.Surface(self.loading_rect.size)
+        self.temp_rect = pg.Rect(
+            self.temp_surf.get_width() // 2 - self.map_pos_rect.width // 2,
+            self.temp_surf.get_height() // 2 - self.map_pos_rect.height // 2,
+            self.map_pos_rect.width,
+            self.map_pos_rect.height
+        )
+        self.tile_surf = pg.Surface((self.tile_size, self.tile_size))
+        self.x_range = [float('inf'), float('-inf')]
+        self.y_range = [float('inf'), float('-inf')]
+        self.zoom_scale = 1
         
     def create_surf(self,
                     surf_x: int,
