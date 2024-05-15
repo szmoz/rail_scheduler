@@ -33,11 +33,13 @@ class CameraView:
                         pg.MOUSEBUTTONDOWN,
                         pg.KEYDOWN,
                         pg.MOUSEMOTION,
+                        pg.MOUSEWHEEL,
                     ),
                     event_functions=(
                         self.start_moving_map,
                         self.standard_keydown,
                         self.standard_mousemotion,
+                        self.standard_mousewheel,
                     ),
                 ),
                 MapStates.MOVE: EventManager(
@@ -147,10 +149,12 @@ class CameraView:
             0,
             self.rect.width,
             self.rect.height)
-        self.loading_thickness = self.surf_size * 2
+        self.aspect_ratio = self.map_pos_rect.width / self.map_pos_rect.height
+        self.px_ratio = self.map_pos_rect.width / self.rect.width
+        self.loading_thickness = self.surf_size
         self.loading_rect = pg.Rect(0, 0, 0, 0)
         self.change_loading_rect_size()
-        self.temp_surf = pg.Surface(self.loading_rect.size)
+        self.temp_surf = pg.Surface((self.rect.width * 3, self.rect.width * 3 / self.aspect_ratio))
         self.temp_rect = pg.Rect(
             self.temp_surf.get_width() // 2 - self.map_pos_rect.width // 2,
             self.temp_surf.get_height() // 2 - self.map_pos_rect.height // 2,
@@ -160,6 +164,11 @@ class CameraView:
         self.tile_surf = pg.Surface((self.tile_size, self.tile_size))
         self.x_range = [float('inf'), float('-inf')]
         self.y_range = [float('inf'), float('-inf')]
+        self.zoom_range = (self.rect.width, self.rect.width * 2.5)
+        self.close_zoom_center = None
+        self.close_zoom_dist = [0, 0]
+        self.act_zoom_dist = [0, 0]
+        self.total_zoom_change = None
         
     # Event management functions
     def event_manager(self,
@@ -196,6 +205,8 @@ class CameraView:
             return False
         # Start moving map
         self.state = MapStates.MOVE
+        # Clear zoom center position
+        self.close_zoom_center = None
         return True
     
     def moving_map_with_mouse(self,
@@ -212,32 +223,32 @@ class CameraView:
         if not self.rect.collidepoint(event.pos):
             return True
         self.move_map(
-            x_move=event.rel[0],
-            y_move=event.rel[1],
+            x_move=event.rel[0] * self.px_ratio,
+            y_move=event.rel[1] * self.px_ratio,
             program=program,
         )
         return True
         
     def move_map(self,
-                 x_move: int,
-                 y_move: int,
+                 x_move: float,
+                 y_move: float,
                  program,
                  ) -> None:
         """
         Move map. Notice x_move, y_move parameters inversed movement
-        :param x_move: x movement
-        :param y_move: y movement
+        :param x_move: x movement multiplied with px_ratio
+        :param y_move: y movement multiplied with px_ratio
         :param program: Program object
         """
         old_loading_x = self.loading_rect.x
         old_loading_y = self.loading_rect.y
         # Set new position
-        new_x = self.map_pos_rect.x - x_move
-        if self.x_range[0] <= new_x <= self.x_range[1]:
+        new_x = int(self.map_pos_rect.x - x_move)
+        if self.x_range[0] <= new_x + self.map_pos_rect.width and new_x <= self.x_range[1]:
             self.map_pos_rect.x = new_x
             self.loading_rect.x -= x_move
-        new_y = self.map_pos_rect.y - y_move
-        if self.y_range[0] <= new_y <= self.y_range[1]:
+        new_y = int(self.map_pos_rect.y - y_move)
+        if self.y_range[0] <= new_y + self.map_pos_rect.height and new_y <= self.y_range[1]:
             self.map_pos_rect.y = new_y
             self.loading_rect.y -= y_move
         # Check for need of loading
@@ -331,6 +342,7 @@ class CameraView:
         :param program: Program object
         :return: True: go to next event; False: go to next event handler
         """
+        # Move map
         movers = {
             pg.K_LEFT: (self.tile_size, 0),
             pg.K_RIGHT: (-self.tile_size, 0),
@@ -345,10 +357,26 @@ class CameraView:
             x_move, y_move = movers[event.key]
             
             self.move_map(
-                x_move=x_move,
-                y_move=y_move,
+                x_move=x_move * self.px_ratio,
+                y_move=y_move * self.px_ratio,
                 program=program,
             )
+            self.close_zoom_center = None
+            return True
+        except KeyError:
+            pass
+        # Zoom
+        zoomers = {
+            pg.K_q: 60,
+            pg.K_e: -60,
+        }
+        try:
+            self.zoom(
+                program=program,
+                zoom_rate=zoomers[event.key],
+                is_mouse=False
+            )
+            return True
         except KeyError:
             return False
     
@@ -365,10 +393,176 @@ class CameraView:
         if not self.rect.collidepoint(event.pos):
             return False
         # Get tile coordinate
-        tile_x = (event.pos[0] - self.rect.x + self.map_pos_rect.x) // self.tile_size
-        tile_y = (event.pos[1] - self.rect.y + self.map_pos_rect.y) // self.tile_size
+        tile_x = ((event.pos[0] - self.rect.x) * self.px_ratio + self.map_pos_rect.x) // self.tile_size
+        tile_y = ((event.pos[1] - self.rect.y) * self.px_ratio + self.map_pos_rect.y) // self.tile_size
         return True
     
+    def standard_mousewheel(self,
+                            event: pg.event.Event,
+                            program,
+                            ) -> bool:
+        """
+        Mousewheel event handler in standard state
+        :param event: pygame event
+        :param program: Program object
+        :return: True: go to next event; False: go to next event handler
+        """
+        # Exclude horizontal wheeling
+        if event.y == 0:
+            return False
+        # Exclude outside area
+        if not self.rect.collidepoint(pg.mouse.get_pos()):
+            return False
+        # Zoom
+        self.zoom(
+            zoom_rate=event.y * -60,
+            program=program
+        )
+        return True
+    
+    def zoom(self,
+             program,
+             zoom_rate: int,
+             is_mouse: bool = True,
+             ) -> None:
+        """
+        Zoom view
+        :param program: Program object
+        :param zoom_rate: rate of zoom
+        :param is_mouse: Zoom with mouse wheel
+        """
+        # Zoom
+        zoom_result = False
+        if is_mouse:
+            if self.zoom_with_mouse(zoom_rate=zoom_rate):
+                zoom_result = True
+        else:
+            if self.zoom_with_key(zoom_rate=zoom_rate):
+                zoom_result = True
+                
+        if not zoom_result:
+            return
+            
+        # Set loading_rect
+        old_surfs = {
+            "x_start": self.loading_rect.left // self.surf_size * self.surf_size,
+            "x_end": self.loading_rect.right // self.surf_size * self.surf_size,
+            "y_start": self.loading_rect.top // self.surf_size * self.surf_size,
+            "y_end": self.loading_rect.bottom // self.surf_size * self.surf_size
+        }
+        self.change_loading_rect_size(new_thickness=int(self.surf_size * self.px_ratio))
+        new_surfs = {
+            "x_start": self.loading_rect.left // self.surf_size * self.surf_size,
+            "x_end": self.loading_rect.right // self.surf_size * self.surf_size,
+            "y_start": self.loading_rect.top // self.surf_size * self.surf_size,
+            "y_end": self.loading_rect.bottom // self.surf_size * self.surf_size
+        }
+        load_params = {
+            "x_start": None,
+            "x_end": None,
+            "y_start": None,
+            "y_end": None,
+        }
+        to_load = False
+        for key in load_params.keys():
+            if old_surfs[key] != new_surfs[key]:
+                load_params[key] = new_surfs[key]
+                to_load = True
+        if to_load:
+            self.load_data(**load_params)
+        # Set temp_rect
+        old_center = self.temp_rect.center
+        self.temp_rect.width = self.map_pos_rect.width
+        self.temp_rect.height = self.map_pos_rect.height
+        self.temp_rect.center = old_center
+        program.draw_rects.append(self.draw(surf=program.screen))
+        
+    def zoom_with_mouse(self, zoom_rate: int) -> bool:
+        """
+        Zoom with mouse
+        :param zoom_rate: rate of zoom
+        :return: True: zooming happened; False: zooming not happened
+        """
+        # Get parameters for zoom
+        mouse_pos = pg.mouse.get_pos()
+        rect_mouse_x = mouse_pos[0] - self.rect.x
+        rect_mouse_y = mouse_pos[1] - self.rect.y
+        map_pos_mouse_x = (rect_mouse_x * self.px_ratio) + self.map_pos_rect.x
+        map_pos_mouse_y = (rect_mouse_y * self.px_ratio) + self.map_pos_rect.y
+        # Set map_pos_rect size
+        old_width = self.map_pos_rect.width
+        old_center = self.map_pos_rect.center
+        self.map_pos_rect.width += zoom_rate
+        if self.map_pos_rect.width < self.zoom_range[0]:
+            self.map_pos_rect.width = self.zoom_range[0]
+        if self.map_pos_rect.width > self.zoom_range[1]:
+            self.map_pos_rect.width = self.zoom_range[1]
+        if old_width == self.map_pos_rect.width:
+            return False
+        self.map_pos_rect.height = self.map_pos_rect.width / self.aspect_ratio
+        self.px_ratio = self.map_pos_rect.width / self.rect.width
+        # Set map_pos_rect position
+        # Zoom out
+        if old_width < self.map_pos_rect.width:
+            self.map_pos_rect.center = old_center
+            self.close_zoom_center = None
+        # Zoom in
+        else:
+            # Far zoom
+            if self.map_pos_rect.width > self.zoom_range[1] / 2:
+                self.map_pos_rect.x = map_pos_mouse_x - (rect_mouse_x * self.px_ratio)
+                self.map_pos_rect.y = map_pos_mouse_y - (rect_mouse_y * self.px_ratio)
+            # Close zoom
+            else:
+                if self.close_zoom_center is None:
+                    self.close_zoom_center = (map_pos_mouse_x, map_pos_mouse_y)
+                    self.close_zoom_dist[0] = mouse_pos[0] - self.rect.centerx
+                    self.close_zoom_dist[1] = mouse_pos[1] - self.rect.centery
+                    self.act_zoom_dist[0] = mouse_pos[0] - self.rect.centerx
+                    self.act_zoom_dist[1] = mouse_pos[1] - self.rect.centery
+                    self.total_zoom_change = (old_width - self.zoom_range[0]) / self.zoom_range[0]
+                old_zoom = (old_width - self.zoom_range[0]) / self.zoom_range[0]
+                new_zoom = (self.map_pos_rect.width - self.zoom_range[0]) / self.zoom_range[0]
+                act_zoom_change = (old_zoom - new_zoom) / self.total_zoom_change
+                self.act_zoom_dist[0] -= self.close_zoom_dist[0] * act_zoom_change
+                self.act_zoom_dist[1] -= self.close_zoom_dist[1] * act_zoom_change
+                self.map_pos_rect.center = self.close_zoom_center
+                self.map_pos_rect.centerx -= self.act_zoom_dist[0] * self.px_ratio
+                self.map_pos_rect.centery -= self.act_zoom_dist[1] * self.px_ratio
+            # Check position out of range
+            if self.map_pos_rect.right < self.x_range[0]:
+                self.map_pos_rect.right = self.x_range[0]
+            elif self.map_pos_rect.left > self.x_range[1]:
+                self.map_pos_rect.left = self.x_range[1]
+            if self.map_pos_rect.bottom < self.y_range[0]:
+                self.map_pos_rect.bottom = self.y_range[0]
+            elif self.map_pos_rect.top > self.y_range[1]:
+                self.map_pos_rect.top = self.y_range[1]
+        return True
+                
+    def zoom_with_key(self, zoom_rate: int) -> bool:
+        """
+        Zoom with keys
+        :param zoom_rate: rate of zoom
+        :return: True: zooming happened; False: zooming not happened
+        """
+        # Set map_pos_rect size
+        old_width = self.map_pos_rect.width
+        old_center = self.map_pos_rect.center
+        self.map_pos_rect.width += zoom_rate
+        if self.map_pos_rect.width < self.zoom_range[0]:
+            self.map_pos_rect.width = self.zoom_range[0]
+        if self.map_pos_rect.width > self.zoom_range[1]:
+            self.map_pos_rect.width = self.zoom_range[1]
+        if old_width == self.map_pos_rect.width:
+            return False
+        self.map_pos_rect.height = self.map_pos_rect.width / self.aspect_ratio
+        self.px_ratio = self.map_pos_rect.width / self.rect.width
+        # Set map_pos_rect position
+        self.map_pos_rect.center = old_center
+        self.close_zoom_center = None
+        return True
+        
     # Data and rect management functions
     def change_loading_rect_size(self,
                                  new_thickness: int = None,
@@ -429,10 +623,10 @@ class CameraView:
                     surf_y=surf_y,
                 )
                 
-        # Set limits -- only if first load
+        # Set limits -- only at first load
         if False in is_None:
             return
-        self.x_range[0] = min(self.map.data.keys()) * self.tile_size - self.rect.width + self.tile_size
+        self.x_range[0] = min(self.map.data.keys()) * self.tile_size + self.tile_size
         self.x_range[1] = max(self.map.data.keys()) * self.tile_size
         self.y_range[0] = float('inf')
         self.y_range[1] = float('-inf')
@@ -612,7 +806,7 @@ class CameraView:
                     dest=(
                         (surf_x - self.map_pos_rect.left) + self.temp_rect.left,
                         (surf_y - self.map_pos_rect.top) + self.temp_rect.top
-                    )
+                    ),
                 )
         
     def draw(self,
@@ -625,11 +819,18 @@ class CameraView:
         """
         # Draw onto temporary surface
         self.draw_temp_surface()
+        # Create scaled surface
+        to_scale_surf = pg.Surface(self.temp_rect.size)
+        to_scale_surf.blit(
+            source=self.temp_surf,
+            dest=(0, 0),
+            area=self.temp_rect,
+        )
+        scaled_surf = pg.transform.scale(to_scale_surf, self.rect.size)
         # Draw temporary surface area to main surface
         surf.blit(
-            source=self.temp_surf,
+            source=scaled_surf,
             dest=self.rect,
-            area=self.temp_rect,
         )
         return self.rect
     
@@ -640,6 +841,7 @@ class CameraView:
         Update camera view basic size and reset map rectangle area
         :param new_size: new size of background (width, height)
         """
+        change_rate = new_size[0] / self.rect.width
         # Update rect
         self.rect = pg.Rect(
             self.rect.topleft,
@@ -647,11 +849,25 @@ class CameraView:
         )
         # Update dynamic rects
         self.map_pos_rect = pg.Rect(
-            self.map_pos_rect.topleft,
-            self.rect.size)
+            self.map_pos_rect.centerx - self.rect.width // 2,
+            self.map_pos_rect.centery - self.rect.height // 2,
+            self.map_pos_rect.width * change_rate,
+            self.map_pos_rect.height * change_rate
+        )
+        self.px_ratio = self.map_pos_rect.width / self.rect.width
+        self.zoom_range = (self.rect.width, self.rect.width * 2.5)
         self.change_loading_rect_size()
+        # Check position out of range
+        if self.map_pos_rect.right < self.x_range[0]:
+            self.map_pos_rect.right = self.x_range[0]
+        elif self.map_pos_rect.left > self.x_range[1]:
+            self.map_pos_rect.left = self.x_range[1]
+        if self.map_pos_rect.bottom < self.y_range[0]:
+            self.map_pos_rect.bottom = self.y_range[0]
+        elif self.map_pos_rect.top > self.y_range[1]:
+            self.map_pos_rect.top = self.y_range[1]
         # Update temp surf&rects
-        self.temp_surf = pg.Surface(self.loading_rect.size)
+        self.temp_surf = pg.Surface((self.zoom_range[1], self.zoom_range[1] / self.aspect_ratio))
         self.temp_rect = pg.Rect(
             self.temp_surf.get_width() // 2 - self.map_pos_rect.width // 2,
             self.temp_surf.get_height() // 2 - self.map_pos_rect.height // 2,
@@ -660,5 +876,10 @@ class CameraView:
         )
         # Reload data
         if self.file_type != FileTypes.NO:
-            self.load_data()
+            self.load_data(
+                x_start=self.loading_rect.left,
+                x_end=self.loading_rect.right,
+                y_start=self.loading_rect.top,
+                y_end=self.loading_rect.bottom
+            )
         
